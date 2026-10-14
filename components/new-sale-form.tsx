@@ -29,6 +29,7 @@ import { CheckCircle2Icon, Trash2Icon } from "lucide-react";
 interface CartLine {
   bookId: string;
   title: string;
+  language?: string | null;
   supplierName?: string;
   maxStock: number;
   quantity: number;
@@ -81,6 +82,7 @@ export function NewSaleForm() {
         {
           bookId: book.id,
           title: book.title,
+          language: book.language,
           supplierName: book.supplier_name,
           maxStock: book.remaining_stock,
           quantity: 1,
@@ -244,7 +246,12 @@ export function NewSaleForm() {
                       return (
                         <TableRow key={line.bookId}>
                           <TableCell>
-                            <div className="font-medium">{line.title}</div>
+                            <div className="font-medium">
+                              {line.title}
+                              {line.language && (
+                                <span className="ml-1.5 font-normal text-muted-foreground">({line.language})</span>
+                              )}
+                            </div>
                             <div className="text-xs text-muted-foreground">{line.supplierName}</div>
                           </TableCell>
                           <TableCell>
@@ -297,7 +304,12 @@ export function NewSaleForm() {
                     <div key={line.bookId} className="rounded-lg border p-3">
                       <div className="flex items-start justify-between gap-2">
                         <div className="min-w-0">
-                          <p className="truncate font-medium">{line.title}</p>
+                          <p className="truncate font-medium">
+                            {line.title}
+                            {line.language && (
+                              <span className="ml-1.5 font-normal text-muted-foreground">({line.language})</span>
+                            )}
+                          </p>
                           <p className="text-xs text-muted-foreground">{line.supplierName}</p>
                         </div>
                         <Button
@@ -472,7 +484,10 @@ function SaleSuccessPanel({ success, onNewSale }: { success: SuccessState; onNew
                   const selling = line.unitListPrice * (1 - line.discountPercent / 100);
                   return (
                     <TableRow key={line.bookId}>
-                      <TableCell>{line.title}</TableCell>
+                      <TableCell>
+                        {line.title}
+                        {line.language && <span className="text-muted-foreground"> ({line.language})</span>}
+                      </TableCell>
                       <TableCell>{line.quantity}</TableCell>
                       <TableCell>{formatCurrency(selling)}</TableCell>
                       <TableCell className="text-right">

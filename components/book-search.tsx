@@ -139,7 +139,12 @@ export function BookSearch({
                   return (
                     <TableRow key={book.id}>
                       <TableCell>
-                        <div className="font-medium">{book.title}</div>
+                        <div className="font-medium">
+                          {book.title}
+                          {book.language && (
+                            <span className="ml-1.5 font-normal text-muted-foreground">({book.language})</span>
+                          )}
+                        </div>
                         <div className="text-xs text-muted-foreground">
                           {book.supplier_name} · {formatCurrency(book.list_price)}
                           {book.discount_percent > 0 && ` (−${book.discount_percent}%)`}
