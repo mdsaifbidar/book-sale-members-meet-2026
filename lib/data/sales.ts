@@ -18,7 +18,7 @@ export interface SalesFilter {
   customerType?: "unit" | "person";
   bookTitle?: string;
   supplier?: string;
-  paymentStatus?: "paid" | "unpaid";
+  paymentMethod?: "cash" | "upi" | "unpaid";
   sortBy?: SalesSortOption;
 }
 
@@ -37,8 +37,7 @@ export async function getSales(filter: SalesFilter): Promise<Sale[]> {
   if (filter.dateFrom) builder = builder.gte("created_at", filter.dateFrom);
   if (filter.dateTo) builder = builder.lte("created_at", filter.dateTo);
   if (filter.customerType) builder = builder.eq("customer_type", filter.customerType);
-  if (filter.paymentStatus === "paid") builder = builder.eq("cash_paid", true);
-  if (filter.paymentStatus === "unpaid") builder = builder.eq("cash_paid", false);
+  if (filter.paymentMethod) builder = builder.eq("payment_method", filter.paymentMethod);
   if (filter.bookTitle) builder = builder.ilike("sale_items.title_snapshot", `%${filter.bookTitle}%`);
   if (filter.supplier) builder = builder.ilike("sale_items.supplier_name_snapshot", `%${filter.supplier}%`);
 

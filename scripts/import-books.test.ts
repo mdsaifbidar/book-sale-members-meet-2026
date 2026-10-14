@@ -24,11 +24,11 @@ describe("parseCatalogue", () => {
     expect(zonal.every((b) => b.discountPercent === 0)).toBe(true);
   });
 
-  it("applies the verified 40% discount to every Hidayat title", async () => {
+  it("applies no discount to Hidayat titles either (discount removed for all suppliers)", async () => {
     const books = await loadBooks();
     const hidayat = books.filter((b) => b.supplier === "Hidayat Publishers & Distributors");
     expect(hidayat.length).toBe(78);
-    expect(hidayat.every((b) => b.discountPercent === 40)).toBe(true);
+    expect(hidayat.every((b) => b.discountPercent === 0)).toBe(true);
     expect(hidayat.every((b) => !b.needsReview)).toBe(true);
   });
 

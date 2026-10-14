@@ -97,7 +97,6 @@ export function BookSearch({
           <DialogTitle>Add Books</DialogTitle>
           <div className="mt-1 flex flex-col gap-2 sm:flex-row">
             <Input
-              autoFocus
               placeholder="Search by title…"
               value={query}
               onChange={(e) => setQuery(e.target.value)}

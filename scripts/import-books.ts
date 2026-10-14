@@ -59,23 +59,9 @@ function resolveNumber(value: ExcelJS.CellValue): number | null {
 
 export function parseCatalogue(workbook: ExcelJS.Workbook): BookRow[] {
   const catalogueSheet = workbook.getWorksheet("Sheet1");
-  const pricingSheet = workbook.getWorksheet("Sheet2");
-  if (!catalogueSheet || !pricingSheet) {
-    throw new Error("Expected 'Sheet1' (catalogue) and 'Sheet2' (Hidayat pricing) worksheets");
+  if (!catalogueSheet) {
+    throw new Error("Expected a 'Sheet1' catalogue worksheet");
   }
-
-  // Sheet2 gives the discount % Hidayat applies per title. Build a lookup by
-  // normalized title rather than trusting row order, so the script still
-  // works if rows are reordered or inserted later.
-  const discountByTitle = new Map<string, number>();
-  pricingSheet.eachRow((row, rowNumber) => {
-    if (rowNumber === 1) return; // header
-    const title = row.getCell(2).text?.trim();
-    const discount = row.getCell(5).value;
-    if (title && typeof discount === "number") {
-      discountByTitle.set(title.toLowerCase(), discount);
-    }
-  });
 
   const books: BookRow[] = [];
   let currentSupplier: string | null = null;
@@ -134,17 +120,6 @@ export function parseCatalogue(workbook: ExcelJS.Workbook): BookRow[] {
       reasons.push("missing stock quantity in source sheet (set to 0)");
     }
 
-    let discountPercent = 0;
-    if (currentSupplier === "Hidayat Publishers & Distributors") {
-      const match = discountByTitle.get(titleCell.toLowerCase());
-      if (match !== undefined) {
-        discountPercent = match;
-      } else {
-        needsReview = true;
-        reasons.push("no matching discount row found in Hidayat pricing sheet (defaulted to 0%)");
-      }
-    }
-
     books.push({
       supplier: currentSupplier,
       slNo,
@@ -152,7 +127,12 @@ export function parseCatalogue(workbook: ExcelJS.Workbook): BookRow[] {
       author,
       language,
       listPrice,
-      discountPercent,
+      // Hidayat's catalogue-wide 40% was removed; every other supplier's
+      // books were already 0% (From Zonal Office never had a discount
+      // source — Sheet2 only ever priced Hidayat's titles). Selling price
+      // is the list price unless staff set a discount at confirmation or
+      // on the Inventory page.
+      discountPercent: 0,
       openingStock,
       needsReview,
       reviewReason: reasons.length ? reasons.join("; ") : null,

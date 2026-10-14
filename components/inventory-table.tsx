@@ -4,7 +4,7 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Input } from "@/components/ui/input";
+import { NumberField } from "@/components/number-field";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -197,23 +197,15 @@ function EditableRow({
     <TableRow>
       <TableCell className="font-medium">{book.title}</TableCell>
       <TableCell>
-        <Input
-          type="number"
-          min={0}
-          step="0.01"
-          value={listPrice}
-          onChange={(e) => setListPrice(Number(e.target.value) || 0)}
-          className="h-9 w-24"
-        />
+        <NumberField min={0} step="0.01" value={listPrice} onCommit={setListPrice} className="h-9 w-24" />
       </TableCell>
       <TableCell>
-        <Input
-          type="number"
+        <NumberField
           min={0}
           max={100}
           step="0.01"
           value={discountPercent}
-          onChange={(e) => setDiscountPercent(Number(e.target.value) || 0)}
+          onCommit={setDiscountPercent}
           className="h-9 w-20"
         />
       </TableCell>
@@ -223,13 +215,7 @@ function EditableRow({
       <TableCell className="hidden sm:table-cell">{book.opening_stock}</TableCell>
       <TableCell className="hidden sm:table-cell">{book.opening_stock - remainingStock}</TableCell>
       <TableCell>
-        <Input
-          type="number"
-          min={0}
-          value={remainingStock}
-          onChange={(e) => setRemainingStock(Math.max(0, Number(e.target.value) || 0))}
-          className="h-9 w-20"
-        />
+        <NumberField min={0} value={remainingStock} onCommit={setRemainingStock} className="h-9 w-20" />
       </TableCell>
       <TableCell className="flex gap-1">
         <Button size="icon" variant="ghost" disabled={pending} onClick={handleSave}>

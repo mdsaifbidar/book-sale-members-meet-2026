@@ -19,6 +19,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { BookSearch } from "@/components/book-search";
+import { NumberField } from "@/components/number-field";
 import { computeCartTotals, formatCurrency } from "@/lib/money";
 import { paymentMethodLabel } from "@/lib/format";
 import type { Book, CustomerType, PaymentMethod } from "@/lib/types";
@@ -247,40 +248,30 @@ export function NewSaleForm() {
                             <div className="text-xs text-muted-foreground">{line.supplierName}</div>
                           </TableCell>
                           <TableCell>
-                            <Input
-                              type="number"
+                            <NumberField
                               min={1}
                               max={line.maxStock}
                               value={line.quantity}
-                              onChange={(e) => {
-                                const qty = Math.max(1, Math.min(line.maxStock, Number(e.target.value) || 1));
-                                updateLine(line.bookId, { quantity: qty });
-                              }}
+                              onCommit={(qty) => updateLine(line.bookId, { quantity: qty })}
                               className="h-9"
                             />
                           </TableCell>
                           <TableCell>
-                            <Input
-                              type="number"
+                            <NumberField
                               min={0}
                               step="0.01"
                               value={line.unitListPrice}
-                              onChange={(e) => updateLine(line.bookId, { unitListPrice: Number(e.target.value) || 0 })}
+                              onCommit={(price) => updateLine(line.bookId, { unitListPrice: price })}
                               className="h-9"
                             />
                           </TableCell>
                           <TableCell>
-                            <Input
-                              type="number"
+                            <NumberField
                               min={0}
                               max={100}
                               step="0.01"
                               value={line.discountPercent}
-                              onChange={(e) =>
-                                updateLine(line.bookId, {
-                                  discountPercent: Math.max(0, Math.min(100, Number(e.target.value) || 0)),
-                                })
-                              }
+                              onCommit={(discount) => updateLine(line.bookId, { discountPercent: discount })}
                               className="h-9"
                             />
                           </TableCell>
@@ -321,42 +312,32 @@ export function NewSaleForm() {
                       <div className="mt-3 grid grid-cols-3 gap-2">
                         <div className="space-y-1">
                           <Label className="text-xs text-muted-foreground">Qty</Label>
-                          <Input
-                            type="number"
+                          <NumberField
                             min={1}
                             max={line.maxStock}
                             value={line.quantity}
-                            onChange={(e) => {
-                              const qty = Math.max(1, Math.min(line.maxStock, Number(e.target.value) || 1));
-                              updateLine(line.bookId, { quantity: qty });
-                            }}
+                            onCommit={(qty) => updateLine(line.bookId, { quantity: qty })}
                             className="h-9"
                           />
                         </div>
                         <div className="space-y-1">
                           <Label className="text-xs text-muted-foreground">Price</Label>
-                          <Input
-                            type="number"
+                          <NumberField
                             min={0}
                             step="0.01"
                             value={line.unitListPrice}
-                            onChange={(e) => updateLine(line.bookId, { unitListPrice: Number(e.target.value) || 0 })}
+                            onCommit={(price) => updateLine(line.bookId, { unitListPrice: price })}
                             className="h-9"
                           />
                         </div>
                         <div className="space-y-1">
                           <Label className="text-xs text-muted-foreground">Disc. %</Label>
-                          <Input
-                            type="number"
+                          <NumberField
                             min={0}
                             max={100}
                             step="0.01"
                             value={line.discountPercent}
-                            onChange={(e) =>
-                              updateLine(line.bookId, {
-                                discountPercent: Math.max(0, Math.min(100, Number(e.target.value) || 0)),
-                              })
-                            }
+                            onCommit={(discount) => updateLine(line.bookId, { discountPercent: discount })}
                             className="h-9"
                           />
                         </div>

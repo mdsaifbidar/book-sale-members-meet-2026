@@ -77,11 +77,10 @@ service-role key anywhere in this app.
 
 ## How pricing works
 
-- **From Zonal Office** titles: no discount — selling price = list price.
-- **Hidayat Publishers & Distributors** titles: a verified **40% discount**
-  applies to every title (confirmed against the source sheet's own pricing
-  worksheet: `list price × quantity × 0.6` matches its stated line totals
-  exactly). Selling price = list price × 0.6.
+No supplier gets an automatic discount on import — every book's selling
+price defaults to its list price (Hidayat's catalogue-wide 40% was removed).
+Staff can still apply a discount per line when building a sale, or set one
+permanently for a book on the Inventory page.
 
 List price and discount % are stored separately on each book, and again as a
 snapshot on every `sale_items` row, so editing a book's price later never

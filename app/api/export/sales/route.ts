@@ -9,7 +9,7 @@ export async function GET(request: NextRequest) {
   await requireUser();
 
   const params = request.nextUrl.searchParams;
-  const paymentStatus = params.get("paymentStatus");
+  const paymentMethod = params.get("paymentMethod");
   const customerType = params.get("customerType");
   const sortBy = params.get("sortBy");
   const filter: SalesFilter = {
@@ -18,7 +18,8 @@ export async function GET(request: NextRequest) {
     customerType: customerType === "unit" || customerType === "person" ? customerType : undefined,
     bookTitle: params.get("bookTitle") ?? undefined,
     supplier: params.get("supplier") ?? undefined,
-    paymentStatus: paymentStatus === "paid" || paymentStatus === "unpaid" ? paymentStatus : undefined,
+    paymentMethod:
+      paymentMethod === "cash" || paymentMethod === "upi" || paymentMethod === "unpaid" ? paymentMethod : undefined,
     sortBy: SORT_VALUES.has(sortBy as SalesSortOption) ? (sortBy as SalesSortOption) : undefined,
   };
 

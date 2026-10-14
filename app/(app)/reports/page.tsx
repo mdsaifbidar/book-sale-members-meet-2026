@@ -17,10 +17,17 @@ interface SearchParams {
   dateTo?: string;
   customerType?: string;
   supplier?: string;
-  paymentStatus?: string;
+  paymentMethod?: string;
 }
 
 const CUSTOMER_TYPE_LABEL: Record<string, string> = { unit: "Unit", person: "Person" };
+const PAYMENT_METHOD_OPTIONS = [
+  { value: "any", label: "Any" },
+  { value: "cash", label: "Cash" },
+  { value: "upi", label: "UPI" },
+  { value: "unpaid", label: "Unpaid" },
+];
+const PAYMENT_METHOD_VALUES = new Set(["cash", "upi", "unpaid"]);
 
 function buildFilter(params: SearchParams): SalesFilter {
   return {
@@ -28,7 +35,9 @@ function buildFilter(params: SearchParams): SalesFilter {
     dateTo: params.dateTo || undefined,
     customerType: params.customerType === "unit" || params.customerType === "person" ? params.customerType : undefined,
     supplier: params.supplier || undefined,
-    paymentStatus: params.paymentStatus === "paid" || params.paymentStatus === "unpaid" ? params.paymentStatus : undefined,
+    paymentMethod: PAYMENT_METHOD_VALUES.has(params.paymentMethod ?? "")
+      ? (params.paymentMethod as "cash" | "upi" | "unpaid")
+      : undefined,
   };
 }
 
@@ -94,16 +103,12 @@ export default async function ReportsPage({
               <Input id="supplier" name="supplier" defaultValue={params.supplier} />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="paymentStatus">Payment Status</Label>
+              <Label htmlFor="paymentMethod">Payment</Label>
               <FilterSelect
-                id="paymentStatus"
-                name="paymentStatus"
-                defaultValue={params.paymentStatus ?? "any"}
-                options={[
-                  { value: "any", label: "Any" },
-                  { value: "paid", label: "Paid" },
-                  { value: "unpaid", label: "Unpaid" },
-                ]}
+                id="paymentMethod"
+                name="paymentMethod"
+                defaultValue={params.paymentMethod ?? "any"}
+                options={PAYMENT_METHOD_OPTIONS}
               />
             </div>
             <div className="flex items-end gap-2 lg:col-span-5">
