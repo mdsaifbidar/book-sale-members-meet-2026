@@ -55,9 +55,16 @@ export function AppShell({
     setMobileOpen(false);
   }
 
-  const currentLabel = NAV_ITEMS.find(
-    ({ href }) => pathname === href || (href !== "/dashboard" && pathname.startsWith(href))
-  )?.label;
+  // Pick the single most specific match rather than letting every item
+  // whose href is a prefix of the pathname light up independently — e.g.
+  // "/sales" is a prefix of "/sales/new", so both would otherwise show
+  // active at once. Sorting by href length and taking the longest match
+  // resolves that without hardcoding route exceptions.
+  const activeHref = NAV_ITEMS.filter(
+    ({ href }) => pathname === href || pathname.startsWith(`${href}/`)
+  ).sort((a, b) => b.href.length - a.href.length)[0]?.href;
+
+  const currentLabel = NAV_ITEMS.find(({ href }) => href === activeHref)?.label;
 
   return (
     <div className="flex h-screen overflow-hidden">
@@ -91,7 +98,7 @@ export function AppShell({
         </div>
         <nav className="flex-1 space-y-1 px-3">
           {NAV_ITEMS.map(({ href, label, icon: Icon }) => {
-            const active = pathname === href || (href !== "/dashboard" && pathname.startsWith(href));
+            const active = href === activeHref;
             return (
               <Link
                 key={href}
