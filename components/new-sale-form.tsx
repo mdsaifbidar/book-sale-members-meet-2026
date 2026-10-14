@@ -411,7 +411,12 @@ export function NewSaleForm() {
             )}
           </div>
 
-          <Button onClick={handleConfirmClick} disabled={pending} size="lg" className="w-full">
+          <Button
+            onClick={handleConfirmClick}
+            disabled={pending || !confirmed || cart.length === 0 || !customerName.trim()}
+            size="lg"
+            className="w-full"
+          >
             Confirm Sale
           </Button>
         </CardContent>
