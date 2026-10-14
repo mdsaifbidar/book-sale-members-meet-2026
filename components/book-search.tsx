@@ -1,23 +1,31 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { formatCurrency } from "@/lib/money";
 import type { Book } from "@/lib/types";
+import { PlusIcon, SearchIcon } from "lucide-react";
 
-export function BookSearch({ onSelect }: { onSelect: (book: Book) => void }) {
+export function BookSearch({
+  onSelect,
+  cartBookIds,
+}: {
+  onSelect: (book: Book) => void;
+  cartBookIds: Set<string>;
+}) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [allBooks, setAllBooks] = useState<Book[] | null>(null);
   const loading = open && allBooks === null;
 
   // Load the whole in-stock catalogue (already sorted A-Z by the API) each
-  // time the dropdown opens, then filter it entirely client-side as the
-  // user types. The catalogue is small (~100 titles), so this is far
-  // snappier than re-querying per keystroke, and shows every match instead
-  // of a debounced, capped page of results. Re-fetching on every open (not
-  // just the first) keeps stock counts fresh across a multi-staff event.
+  // time the dialog opens, then filter it entirely client-side as the user
+  // types — the catalogue is small (~100 titles), so this is snappier than
+  // a per-keystroke query. Re-fetching on every open keeps stock counts
+  // fresh across a multi-staff event.
   useEffect(() => {
     if (!open) return;
     let cancelled = false;
@@ -39,45 +47,84 @@ export function BookSearch({ onSelect }: { onSelect: (book: Book) => void }) {
   }, [allBooks, query]);
 
   return (
-    <Popover
+    <Dialog
       open={open}
       onOpenChange={(next) => {
         setOpen(next);
         if (!next) setQuery("");
       }}
     >
-      <PopoverTrigger className="flex h-10 w-full items-center rounded-md border border-input bg-background px-3 text-sm text-muted-foreground hover:bg-accent/50">
+      <DialogTrigger
+        render={<Button variant="outline" className="w-full justify-start font-normal text-muted-foreground" />}
+      >
+        <SearchIcon className="size-4" />
         Search books by title to add to the cart…
-      </PopoverTrigger>
-      <PopoverContent className="w-(--anchor-width) p-0" align="start">
-        <Command shouldFilter={false}>
-          <CommandInput placeholder="Search by title…" value={query} onValueChange={setQuery} />
-          <CommandList className="max-h-[60vh]">
-            {loading && <p className="py-6 text-center text-sm text-muted-foreground">Loading books…</p>}
-            {!loading && results.length === 0 && <CommandEmpty>No books found.</CommandEmpty>}
-            <CommandGroup>
-              {results.map((book) => (
-                <CommandItem
-                  key={book.id}
-                  value={book.id}
-                  onSelect={() => {
-                    onSelect(book);
-                    setOpen(false);
-                    setQuery("");
-                  }}
-                  className="flex flex-col items-start gap-0.5"
-                >
-                  <span className="font-medium">{book.title}</span>
-                  <span className="text-xs text-muted-foreground">
-                    {book.supplier_name} · {formatCurrency(book.list_price)}
-                    {book.discount_percent > 0 && ` (−${book.discount_percent}%)`} · {book.remaining_stock} in stock
-                  </span>
-                </CommandItem>
-              ))}
-            </CommandGroup>
-          </CommandList>
-        </Command>
-      </PopoverContent>
-    </Popover>
+      </DialogTrigger>
+      <DialogContent className="flex max-h-[85vh] max-w-[calc(100%-2rem)] flex-col gap-0 p-0 sm:max-w-2xl">
+        <DialogHeader className="border-b p-4 pb-3">
+          <DialogTitle>Add Books</DialogTitle>
+          <Input
+            autoFocus
+            placeholder="Search by title…"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            className="mt-1"
+          />
+        </DialogHeader>
+
+        <div className="overflow-y-auto">
+          {loading ? (
+            <p className="p-10 text-center text-sm text-muted-foreground">Loading books…</p>
+          ) : results.length === 0 ? (
+            <p className="p-10 text-center text-sm text-muted-foreground">No books found.</p>
+          ) : (
+            <Table>
+              <TableHeader className="sticky top-0 z-10 bg-popover">
+                <TableRow>
+                  <TableHead>Title</TableHead>
+                  <TableHead className="w-16 text-right">Stock</TableHead>
+                  <TableHead className="w-20" />
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {results.map((book) => {
+                  const inCart = cartBookIds.has(book.id);
+                  return (
+                    <TableRow key={book.id}>
+                      <TableCell>
+                        <div className="font-medium">{book.title}</div>
+                        <div className="text-xs text-muted-foreground">
+                          {book.supplier_name} · {formatCurrency(book.list_price)}
+                          {book.discount_percent > 0 && ` (−${book.discount_percent}%)`}
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-right">{book.remaining_stock}</TableCell>
+                      <TableCell>
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant={inCart ? "secondary" : "default"}
+                          disabled={inCart}
+                          onClick={() => onSelect(book)}
+                        >
+                          {inCart ? (
+                            "Added"
+                          ) : (
+                            <>
+                              <PlusIcon className="size-3.5" />
+                              Add
+                            </>
+                          )}
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
+          )}
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 }

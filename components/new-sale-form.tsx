@@ -7,6 +7,14 @@ import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -46,6 +54,8 @@ export function NewSaleForm() {
   const [idempotencyKey, setIdempotencyKey] = useState(() => crypto.randomUUID());
   const [pending, startTransition] = useTransition();
   const [success, setSuccess] = useState<SuccessState | null>(null);
+  const [attempted, setAttempted] = useState(false);
+  const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
 
   const totals = useMemo(
     () =>
@@ -96,9 +106,15 @@ export function NewSaleForm() {
     setConfirmed(false);
     setIdempotencyKey(crypto.randomUUID());
     setSuccess(null);
+    setAttempted(false);
+    setConfirmDialogOpen(false);
   }
 
-  function handleSubmit() {
+  // Validates and, if everything looks right, opens the final confirmation
+  // dialog rather than saving immediately — a deliberate extra checkpoint
+  // before the sale (and its stock decrement) becomes permanent.
+  function handleConfirmClick() {
+    setAttempted(true);
     if (!customerName.trim()) {
       toast.error("Enter a unit/person name");
       return;
@@ -111,7 +127,10 @@ export function NewSaleForm() {
       toast.error("Please confirm the sale before saving");
       return;
     }
+    setConfirmDialogOpen(true);
+  }
 
+  function submitSale() {
     startTransition(async () => {
       const result = await confirmSale({
         customerType,
@@ -129,9 +148,11 @@ export function NewSaleForm() {
 
       if (!result.success) {
         toast.error(result.error ?? "Could not save the sale");
+        setConfirmDialogOpen(false);
         return;
       }
 
+      setConfirmDialogOpen(false);
       setSuccess({
         saleId: result.saleId!,
         transactionCode: result.transactionCode!,
@@ -174,13 +195,19 @@ export function NewSaleForm() {
             </div>
           </div>
           <div className="space-y-2">
-            <Label htmlFor="customerName">{customerType === "unit" ? "Unit Name" : "Person Name"}</Label>
+            <Label htmlFor="customerName">
+              {customerType === "unit" ? "Unit Name" : "Person Name"} <span className="text-destructive">*</span>
+            </Label>
             <Input
               id="customerName"
               value={customerName}
               onChange={(e) => setCustomerName(e.target.value)}
               placeholder={customerType === "unit" ? "e.g. Mangalore Unit" : "e.g. Ahmed Khan"}
+              aria-invalid={attempted && !customerName.trim()}
             />
+            {attempted && !customerName.trim() && (
+              <p className="text-xs text-destructive">This field is required.</p>
+            )}
           </div>
         </CardContent>
       </Card>
@@ -190,7 +217,7 @@ export function NewSaleForm() {
           <CardTitle>Books</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <BookSearch onSelect={addBook} />
+          <BookSearch onSelect={addBook} cartBookIds={new Set(cart.map((l) => l.bookId))} />
 
           {cart.length === 0 ? (
             <p className="py-8 text-center text-sm text-muted-foreground">No books added yet.</p>
@@ -369,7 +396,7 @@ export function NewSaleForm() {
             <Label htmlFor="paymentMethod">Payment</Label>
             <Select value={paymentMethod} onValueChange={(v) => setPaymentMethod(v as PaymentMethod)}>
               <SelectTrigger id="paymentMethod" className="w-full sm:w-48">
-                <SelectValue />
+                <SelectValue>{(value: PaymentMethod) => paymentMethodLabel(value)}</SelectValue>
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="unpaid">Unpaid</SelectItem>
@@ -379,23 +406,53 @@ export function NewSaleForm() {
             </Select>
           </div>
 
-          <div className="flex items-center gap-2">
-            <Checkbox id="confirmed" checked={confirmed} onCheckedChange={(v) => setConfirmed(v === true)} />
-            <Label htmlFor="confirmed" className="font-normal">
-              I confirm the items, quantities, and amount above are correct
-            </Label>
+          <div className="space-y-1">
+            <div className="flex items-center gap-2">
+              <Checkbox id="confirmed" checked={confirmed} onCheckedChange={(v) => setConfirmed(v === true)} />
+              <Label htmlFor="confirmed" className="font-normal">
+                I confirm the items, quantities, and amount above are correct
+              </Label>
+            </div>
+            {attempted && !confirmed && (
+              <p className="text-xs text-destructive">Please check this box to continue.</p>
+            )}
           </div>
 
-          <Button
-            onClick={handleSubmit}
-            disabled={pending || !confirmed || cart.length === 0 || !customerName.trim()}
-            size="lg"
-            className="w-full"
-          >
-            {pending ? "Saving…" : "Confirm Sale"}
+          <Button onClick={handleConfirmClick} disabled={pending} size="lg" className="w-full">
+            Confirm Sale
           </Button>
         </CardContent>
       </Card>
+
+      <Dialog open={confirmDialogOpen} onOpenChange={setConfirmDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Save this sale?</DialogTitle>
+            <DialogDescription>
+              {cart.length} book{cart.length === 1 ? "" : "s"} for {customerName} ({customerType}). This decrements
+              stock immediately — double-check before saving.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-1 rounded-lg border bg-muted/30 p-3 text-sm">
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">Total Payable</span>
+              <span className="font-medium">{formatCurrency(totals.total)}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">Payment</span>
+              <span>{paymentMethodLabel(paymentMethod)}</span>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setConfirmDialogOpen(false)} disabled={pending}>
+              Cancel
+            </Button>
+            <Button onClick={submitSale} disabled={pending}>
+              {pending ? "Saving…" : "Confirm & Save"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

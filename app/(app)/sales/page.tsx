@@ -81,7 +81,9 @@ export default async function SalesHistoryPage({
               <Label htmlFor="customerType">Customer Type</Label>
               <Select name="customerType" defaultValue={params.customerType ?? "any"}>
                 <SelectTrigger id="customerType">
-                  <SelectValue />
+                  <SelectValue>
+                    {(value: string) => ({ any: "Any", unit: "Unit", person: "Person" })[value] ?? value}
+                  </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="any">Any</SelectItem>
@@ -102,7 +104,9 @@ export default async function SalesHistoryPage({
               <Label htmlFor="paymentStatus">Payment</Label>
               <Select name="paymentStatus" defaultValue={params.paymentStatus ?? "any"}>
                 <SelectTrigger id="paymentStatus">
-                  <SelectValue />
+                  <SelectValue>
+                    {(value: string) => ({ any: "Any", paid: "Paid", unpaid: "Unpaid" })[value] ?? value}
+                  </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="any">Any</SelectItem>
