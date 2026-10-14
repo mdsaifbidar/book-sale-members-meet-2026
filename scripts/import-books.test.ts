@@ -5,25 +5,23 @@ import { parseCatalogue } from "./import-books";
 
 async function loadBooks() {
   const workbook = new ExcelJS.Workbook();
-  await workbook.xlsx.readFile(path.join(process.cwd(), "data", "Sale - Book List.xlsx"));
+  await workbook.xlsx.readFile(path.join(process.cwd(), "data", "Sale - Book List - Updated.xlsx"));
   return parseCatalogue(workbook);
 }
 
 describe("parseCatalogue", () => {
-  it("parses all 119 catalogue rows across 3 suppliers", async () => {
+  it("parses all 134 catalogue rows across 2 suppliers", async () => {
     const books = await loadBooks();
-    expect(books).toHaveLength(119);
+    expect(books).toHaveLength(134);
     const suppliers = new Set(books.map((b) => b.supplier));
-    expect(suppliers).toEqual(
-      new Set(["White Dot Publisher", "Hidayat Publishers & Distributors", "SIO Syllabus / Other"])
-    );
+    expect(suppliers).toEqual(new Set(["From Zonal Office", "Hidayat Publishers & Distributors"]));
   });
 
-  it("applies no discount to White Dot Publisher titles", async () => {
+  it("applies no discount to From Zonal Office titles", async () => {
     const books = await loadBooks();
-    const whiteDot = books.filter((b) => b.supplier === "White Dot Publisher");
-    expect(whiteDot.length).toBeGreaterThan(0);
-    expect(whiteDot.every((b) => b.discountPercent === 0)).toBe(true);
+    const zonal = books.filter((b) => b.supplier === "From Zonal Office");
+    expect(zonal.length).toBeGreaterThan(0);
+    expect(zonal.every((b) => b.discountPercent === 0)).toBe(true);
   });
 
   it("applies the verified 40% discount to every Hidayat title", async () => {
@@ -34,18 +32,16 @@ describe("parseCatalogue", () => {
     expect(hidayat.every((b) => !b.needsReview)).toBe(true);
   });
 
-  it("flags the Kannada-section book with a missing stock quantity", async () => {
+  it("splits SIO Constitution into its three language editions, each with stock", async () => {
     const books = await loadBooks();
-    const book = books.find((b) => b.title === "Islam, Islamic Movement & SIO");
-    expect(book).toBeDefined();
-    expect(book?.openingStock).toBe(0);
-    expect(book?.needsReview).toBe(true);
+    const editions = books.filter((b) => b.title === "SIO Constitution");
+    expect(editions).toHaveLength(3);
+    expect(new Set(editions.map((b) => b.language))).toEqual(new Set(["Kannada", "Urdu", "English"]));
+    expect(editions.every((b) => b.openingStock === 30 && !b.needsReview)).toBe(true);
   });
 
-  it("flags the Urdu title mixed into the Kannada syllabus section", async () => {
+  it("flags no rows for manual review in the corrected catalogue", async () => {
     const books = await loadBooks();
-    const book = books.find((b) => b.title.startsWith("Muhabbat e Rasool"));
-    expect(book).toBeDefined();
-    expect(book?.needsReview).toBe(true);
+    expect(books.filter((b) => b.needsReview)).toHaveLength(0);
   });
 });

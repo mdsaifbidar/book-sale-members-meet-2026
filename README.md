@@ -35,10 +35,7 @@ service-role key anywhere in this app.
      Project Settings → API in your Supabase dashboard.
 
 3. **Run the database migrations.** Open the Supabase SQL Editor and run,
-   in order:
-   - `supabase/migrations/0001_schema.sql`
-   - `supabase/migrations/0002_create_sale_rpc.sql`
-   - `supabase/migrations/0003_views.sql`
+   in order (0001 through the highest-numbered file in that folder).
 
 4. **Create the admin login.** In Supabase Dashboard → Authentication →
    Users → Add user, create one user (tick "Auto Confirm User") with the
@@ -49,8 +46,8 @@ service-role key anywhere in this app.
    in-app Account page, once logged in) before the real event.
 
 5. **Import the book catalogue.** The source file
-   `data/Sale - Book List.xlsx` has already been parsed once; regenerate the
-   seed SQL any time the source file changes:
+   `data/Sale - Book List - Updated.xlsx` has already been parsed once;
+   regenerate the seed SQL any time the source file changes:
 
    ```bash
    npm run import:books
@@ -60,16 +57,15 @@ service-role key anywhere in this app.
    Supabase SQL Editor. It's safe to re-run after edits to the source
    spreadsheet — books are matched on (supplier, Sl.No), and `remaining_stock`
    is only set on first insert, so re-importing never resets stock that's
-   already been sold.
+   already been sold. If the supplier names or Sl.No numbering in the source
+   sheet change again (as happened once already), a plain re-run will add
+   duplicates instead of replacing — in that case clear `sale_items`,
+   `sales`, `books`, and `suppliers` first, then run the fresh
+   `import_books.sql`.
 
-   Two catalogue rows were flagged `needs_review` by the import (see the
-   script's console output) because the source sheet was ambiguous there —
-   fix them on the **Inventory** page once you're logged in:
-   - *"Islam, Islamic Movement & SIO"* (Kannada section) had no stock
-     quantity in the sheet — imported with 0 stock.
-   - *"Muhabbat e Rasool aur uske taqaze"* is an Urdu title with an author,
-     sitting under the Kannada-syllabus header — its supplier/category may
-     need correcting.
+   If the import script ever flags rows with `needs_review` (see its console
+   output), they're still imported with best-effort defaults — fix them on
+   the **Inventory** page once logged in.
 
 6. **Run the dev server**
 
@@ -81,13 +77,11 @@ service-role key anywhere in this app.
 
 ## How pricing works
 
-- **White Dot Publisher** titles: no discount — selling price = list price.
+- **From Zonal Office** titles: no discount — selling price = list price.
 - **Hidayat Publishers & Distributors** titles: a verified **40% discount**
   applies to every title (confirmed against the source sheet's own pricing
   worksheet: `list price × quantity × 0.6` matches its stated line totals
   exactly). Selling price = list price × 0.6.
-- **SIO Syllabus / Other** (Kannada/Urdu) titles: no discount info available
-  — selling price = list price.
 
 List price and discount % are stored separately on each book, and again as a
 snapshot on every `sale_items` row, so editing a book's price later never
@@ -135,14 +129,14 @@ Confirming a sale calls a single Postgres function, `create_sale` (see
       should never go negative.
 - [ ] Double-click "Confirm Sale" (or resubmit the same idempotency key) —
       confirm only one sale is created.
-- [ ] Mark a sale "Cash paid" vs. leave it unpaid, check the Dashboard's
-      "Total Collected" / "Unpaid Sales" figures update correctly.
+- [ ] Try each Payment option (Cash / UPI / Unpaid) on a sale, check the
+      Dashboard's "Total Collected" / "Unpaid Sales" figures update correctly.
 - [ ] Edit a book's price/discount/stock on the Inventory page.
-- [ ] Filter Sales History by date, customer, book, supplier, and payment
-      status.
+- [ ] Filter Sales History by date, customer type, book, supplier, and
+      payment status.
 - [ ] Export: all sales, a filtered set, a single receipt, and the inventory
       report — open each `.xlsx` and spot-check the numbers.
-- [ ] Fix the two `needs_review`-flagged catalogue rows (see step 5 above).
+- [ ] Delete a test sale from its detail page and confirm stock is restored.
 
 ## Not built in this version
 

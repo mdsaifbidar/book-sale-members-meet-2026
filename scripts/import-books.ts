@@ -1,10 +1,10 @@
 /**
- * Parses the SIO book catalogue (`Sale - Book List.xlsx`) and generates an
- * idempotent SQL file (`supabase/seed/import_books.sql`) that upserts
- * suppliers and books into Supabase. Re-running this script after the
- * source file changes is safe: books are matched on (supplier, sl_no), and
- * `remaining_stock` is only set on first insert — it is never reset by a
- * later re-import, so sold stock is never clobbered.
+ * Parses the SIO book catalogue (`Sale - Book List - Updated.xlsx`) and
+ * generates an idempotent SQL file (`supabase/seed/import_books.sql`) that
+ * upserts suppliers and books into Supabase. Re-running this script after
+ * the source file changes is safe: books are matched on (supplier, sl_no),
+ * and `remaining_stock` is only set on first insert — it is never reset by
+ * a later re-import, so sold stock is never clobbered.
  *
  * Usage: npx tsx scripts/import-books.ts [path-to-xlsx]
  */
@@ -13,9 +13,13 @@ import path from "node:path";
 import fs from "node:fs";
 
 export const SUPPLIER_HEADERS: Record<string, string> = {
-  "directly from white dot publisher": "White Dot Publisher",
+  "from zonal office": "From Zonal Office",
+  // Earlier catalogue versions used this header for the same section
+  // (and split SIO's own publications into a separate section below it,
+  // since folded into "From Zonal Office") — kept so the script still
+  // works against an older source file.
+  "directly from white dot publisher": "From Zonal Office",
   "hidayat publishers & distributors": "Hidayat Publishers & Distributors",
-  "sio syllabus book - kannada": "SIO Syllabus / Other",
 };
 
 export interface BookRow {
@@ -75,7 +79,6 @@ export function parseCatalogue(workbook: ExcelJS.Workbook): BookRow[] {
 
   const books: BookRow[] = [];
   let currentSupplier: string | null = null;
-  let sectionDefaultLanguage: string | null = null;
 
   catalogueSheet.eachRow((row, rowNumber) => {
     if (rowNumber === 1) return; // header row
@@ -91,7 +94,6 @@ export function parseCatalogue(workbook: ExcelJS.Workbook): BookRow[] {
       const matched = SUPPLIER_HEADERS[headerText];
       if (matched) {
         currentSupplier = matched;
-        sectionDefaultLanguage = null;
       } else {
         console.warn(`Row ${rowNumber}: unrecognized section header "${row.getCell(1).text}" — skipping until a known header appears`);
         currentSupplier = null;
@@ -140,22 +142,6 @@ export function parseCatalogue(workbook: ExcelJS.Workbook): BookRow[] {
       } else {
         needsReview = true;
         reasons.push("no matching discount row found in Hidayat pricing sheet (defaulted to 0%)");
-      }
-    }
-
-    // Track the first language seen in the "SIO Syllabus / Other" section as
-    // the section's expected language; flag rows that drift from it (e.g. an
-    // Urdu title mixed into an otherwise-Kannada section) for manual review.
-    if (currentSupplier === "SIO Syllabus / Other") {
-      if (sectionDefaultLanguage === null && language) {
-        sectionDefaultLanguage = language;
-      } else if (sectionDefaultLanguage && language && language !== sectionDefaultLanguage) {
-        needsReview = true;
-        reasons.push(`language "${language}" differs from section's primary language "${sectionDefaultLanguage}"`);
-      }
-      if (author) {
-        needsReview = true;
-        reasons.push("has an author listed, unlike other titles in this section — verify supplier/category");
       }
     }
 
@@ -216,7 +202,7 @@ export function buildImportSql(books: BookRow[]): string {
 }
 
 async function main() {
-  const sourcePath = process.argv[2] ?? path.join(process.cwd(), "data", "Sale - Book List.xlsx");
+  const sourcePath = process.argv[2] ?? path.join(process.cwd(), "data", "Sale - Book List - Updated.xlsx");
   const outputPath = path.join(process.cwd(), "supabase", "seed", "import_books.sql");
 
   if (!fs.existsSync(sourcePath)) {
