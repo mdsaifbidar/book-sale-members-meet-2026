@@ -31,8 +31,8 @@ export function AppShell({
   const pathname = usePathname();
 
   return (
-    <div className="flex min-h-screen">
-      <aside className="flex w-60 shrink-0 flex-col bg-sidebar text-sidebar-foreground print:hidden">
+    <div className="flex h-screen overflow-hidden">
+      <aside className="flex h-full w-60 shrink-0 flex-col overflow-y-auto bg-sidebar text-sidebar-foreground print:hidden">
         <div className="px-5 py-6">
           <p className="text-sm font-semibold tracking-tight">SIO Book Sale</p>
           <p className="text-xs text-sidebar-foreground/60">Members Meet 2026</p>
@@ -70,7 +70,7 @@ export function AppShell({
           </form>
         </div>
       </aside>
-      <main className="flex-1 bg-background">
+      <main className="h-full flex-1 overflow-y-auto bg-background">
         <div className="mx-auto max-w-7xl px-6 py-8 sm:px-8">{children}</div>
       </main>
     </div>

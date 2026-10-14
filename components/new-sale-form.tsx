@@ -300,7 +300,12 @@ export function NewSaleForm() {
             </Label>
           </div>
 
-          <Button onClick={handleSubmit} disabled={pending} size="lg" className="w-full">
+          <Button
+            onClick={handleSubmit}
+            disabled={pending || !confirmed || cart.length === 0 || !customerName.trim()}
+            size="lg"
+            className="w-full"
+          >
             {pending ? "Saving…" : "Confirm Sale"}
           </Button>
         </CardContent>

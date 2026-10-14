@@ -32,7 +32,7 @@ export function BookSearch({ onSelect }: { onSelect: (book: Book) => void }) {
       <PopoverTrigger className="flex h-10 w-full items-center rounded-md border border-input bg-background px-3 text-sm text-muted-foreground hover:bg-accent/50">
         Search books by title to add to the cart…
       </PopoverTrigger>
-      <PopoverContent className="w-[420px] p-0" align="start">
+      <PopoverContent className="w-(--anchor-width) p-0" align="start">
         <Command shouldFilter={false}>
           <CommandInput placeholder="Search by title…" value={query} onValueChange={setQuery} />
           <CommandList>
