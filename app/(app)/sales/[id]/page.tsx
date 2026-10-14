@@ -22,12 +22,12 @@ export default async function SaleDetailPage({ params }: { params: Promise<{ id:
       </Link>
 
       <Card>
-        <CardHeader className="flex flex-row items-start justify-between">
+        <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div>
             <CardTitle className="text-xl">{sale.transaction_code}</CardTitle>
             <p className="text-sm text-muted-foreground">{formatDateTime(sale.created_at)}</p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <Badge variant={sale.cash_paid ? "secondary" : "destructive"}>{sale.cash_paid ? "Paid" : "Unpaid"}</Badge>
             <a href={`/api/export/receipt/${sale.id}`} className={buttonVariants({ variant: "outline" })}>
               Download Excel
@@ -54,32 +54,36 @@ export default async function SaleDetailPage({ params }: { params: Promise<{ id:
             </div>
           </div>
 
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Title</TableHead>
-                <TableHead>Supplier</TableHead>
-                <TableHead>Qty</TableHead>
-                <TableHead>List Price</TableHead>
-                <TableHead>Discount %</TableHead>
-                <TableHead>Unit Price</TableHead>
-                <TableHead className="text-right">Line Total</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {sale.items.map((item) => (
-                <TableRow key={item.id}>
-                  <TableCell>{item.title_snapshot}</TableCell>
-                  <TableCell className="text-muted-foreground">{item.supplier_name_snapshot}</TableCell>
-                  <TableCell>{item.quantity}</TableCell>
-                  <TableCell>{formatCurrency(item.unit_list_price)}</TableCell>
-                  <TableCell>{item.discount_percent}%</TableCell>
-                  <TableCell>{formatCurrency(item.unit_selling_price)}</TableCell>
-                  <TableCell className="text-right">{formatCurrency(item.line_total)}</TableCell>
+          <div className="-mx-(--card-spacing) overflow-x-auto px-(--card-spacing)">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Title</TableHead>
+                  <TableHead className="hidden sm:table-cell">Supplier</TableHead>
+                  <TableHead>Qty</TableHead>
+                  <TableHead className="hidden sm:table-cell">List Price</TableHead>
+                  <TableHead className="hidden sm:table-cell">Discount %</TableHead>
+                  <TableHead>Unit Price</TableHead>
+                  <TableHead className="text-right">Line Total</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {sale.items.map((item) => (
+                  <TableRow key={item.id}>
+                    <TableCell>{item.title_snapshot}</TableCell>
+                    <TableCell className="hidden text-muted-foreground sm:table-cell">
+                      {item.supplier_name_snapshot}
+                    </TableCell>
+                    <TableCell>{item.quantity}</TableCell>
+                    <TableCell className="hidden sm:table-cell">{formatCurrency(item.unit_list_price)}</TableCell>
+                    <TableCell className="hidden sm:table-cell">{item.discount_percent}%</TableCell>
+                    <TableCell>{formatCurrency(item.unit_selling_price)}</TableCell>
+                    <TableCell className="text-right">{formatCurrency(item.line_total)}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
 
           <div className="flex justify-end">
             <div className="w-full max-w-xs space-y-1 text-sm">

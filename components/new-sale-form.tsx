@@ -193,76 +193,153 @@ export function NewSaleForm() {
           {cart.length === 0 ? (
             <p className="py-8 text-center text-sm text-muted-foreground">No books added yet.</p>
           ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Title</TableHead>
-                  <TableHead className="w-24">Qty</TableHead>
-                  <TableHead className="w-32">List Price</TableHead>
-                  <TableHead className="w-28">Discount %</TableHead>
-                  <TableHead className="w-32 text-right">Line Total</TableHead>
-                  <TableHead className="w-10" />
-                </TableRow>
-              </TableHeader>
-              <TableBody>
+            <>
+              {/* Table layout for sm+ screens */}
+              <div className="hidden -mx-(--card-spacing) overflow-x-auto px-(--card-spacing) sm:block">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Title</TableHead>
+                      <TableHead className="w-24">Qty</TableHead>
+                      <TableHead className="w-32">List Price</TableHead>
+                      <TableHead className="w-28">Discount %</TableHead>
+                      <TableHead className="w-32 text-right">Line Total</TableHead>
+                      <TableHead className="w-10" />
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {cart.map((line) => {
+                      const selling = line.unitListPrice * (1 - line.discountPercent / 100);
+                      const lineTotal = Math.round(selling * line.quantity * 100) / 100;
+                      return (
+                        <TableRow key={line.bookId}>
+                          <TableCell>
+                            <div className="font-medium">{line.title}</div>
+                            <div className="text-xs text-muted-foreground">{line.supplierName}</div>
+                          </TableCell>
+                          <TableCell>
+                            <Input
+                              type="number"
+                              min={1}
+                              max={line.maxStock}
+                              value={line.quantity}
+                              onChange={(e) => {
+                                const qty = Math.max(1, Math.min(line.maxStock, Number(e.target.value) || 1));
+                                updateLine(line.bookId, { quantity: qty });
+                              }}
+                              className="h-9"
+                            />
+                          </TableCell>
+                          <TableCell>
+                            <Input
+                              type="number"
+                              min={0}
+                              step="0.01"
+                              value={line.unitListPrice}
+                              onChange={(e) => updateLine(line.bookId, { unitListPrice: Number(e.target.value) || 0 })}
+                              className="h-9"
+                            />
+                          </TableCell>
+                          <TableCell>
+                            <Input
+                              type="number"
+                              min={0}
+                              max={100}
+                              step="0.01"
+                              value={line.discountPercent}
+                              onChange={(e) =>
+                                updateLine(line.bookId, {
+                                  discountPercent: Math.max(0, Math.min(100, Number(e.target.value) || 0)),
+                                })
+                              }
+                              className="h-9"
+                            />
+                          </TableCell>
+                          <TableCell className="text-right font-medium">{formatCurrency(lineTotal)}</TableCell>
+                          <TableCell>
+                            <Button variant="ghost" size="icon" onClick={() => removeLine(line.bookId)}>
+                              <Trash2Icon className="size-4 text-destructive" />
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
+                  </TableBody>
+                </Table>
+              </div>
+
+              {/* Stacked cards for narrow screens: the table above is unusable at phone widths */}
+              <div className="space-y-3 sm:hidden">
                 {cart.map((line) => {
                   const selling = line.unitListPrice * (1 - line.discountPercent / 100);
                   const lineTotal = Math.round(selling * line.quantity * 100) / 100;
                   return (
-                    <TableRow key={line.bookId}>
-                      <TableCell>
-                        <div className="font-medium">{line.title}</div>
-                        <div className="text-xs text-muted-foreground">{line.supplierName}</div>
-                      </TableCell>
-                      <TableCell>
-                        <Input
-                          type="number"
-                          min={1}
-                          max={line.maxStock}
-                          value={line.quantity}
-                          onChange={(e) => {
-                            const qty = Math.max(1, Math.min(line.maxStock, Number(e.target.value) || 1));
-                            updateLine(line.bookId, { quantity: qty });
-                          }}
-                          className="h-9"
-                        />
-                      </TableCell>
-                      <TableCell>
-                        <Input
-                          type="number"
-                          min={0}
-                          step="0.01"
-                          value={line.unitListPrice}
-                          onChange={(e) => updateLine(line.bookId, { unitListPrice: Number(e.target.value) || 0 })}
-                          className="h-9"
-                        />
-                      </TableCell>
-                      <TableCell>
-                        <Input
-                          type="number"
-                          min={0}
-                          max={100}
-                          step="0.01"
-                          value={line.discountPercent}
-                          onChange={(e) =>
-                            updateLine(line.bookId, {
-                              discountPercent: Math.max(0, Math.min(100, Number(e.target.value) || 0)),
-                            })
-                          }
-                          className="h-9"
-                        />
-                      </TableCell>
-                      <TableCell className="text-right font-medium">{formatCurrency(lineTotal)}</TableCell>
-                      <TableCell>
-                        <Button variant="ghost" size="icon" onClick={() => removeLine(line.bookId)}>
+                    <div key={line.bookId} className="rounded-lg border p-3">
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="min-w-0">
+                          <p className="truncate font-medium">{line.title}</p>
+                          <p className="text-xs text-muted-foreground">{line.supplierName}</p>
+                        </div>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="-mr-2 -mt-1 shrink-0"
+                          onClick={() => removeLine(line.bookId)}
+                        >
                           <Trash2Icon className="size-4 text-destructive" />
                         </Button>
-                      </TableCell>
-                    </TableRow>
+                      </div>
+                      <div className="mt-3 grid grid-cols-3 gap-2">
+                        <div className="space-y-1">
+                          <Label className="text-xs text-muted-foreground">Qty</Label>
+                          <Input
+                            type="number"
+                            min={1}
+                            max={line.maxStock}
+                            value={line.quantity}
+                            onChange={(e) => {
+                              const qty = Math.max(1, Math.min(line.maxStock, Number(e.target.value) || 1));
+                              updateLine(line.bookId, { quantity: qty });
+                            }}
+                            className="h-9"
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <Label className="text-xs text-muted-foreground">Price</Label>
+                          <Input
+                            type="number"
+                            min={0}
+                            step="0.01"
+                            value={line.unitListPrice}
+                            onChange={(e) => updateLine(line.bookId, { unitListPrice: Number(e.target.value) || 0 })}
+                            className="h-9"
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <Label className="text-xs text-muted-foreground">Disc. %</Label>
+                          <Input
+                            type="number"
+                            min={0}
+                            max={100}
+                            step="0.01"
+                            value={line.discountPercent}
+                            onChange={(e) =>
+                              updateLine(line.bookId, {
+                                discountPercent: Math.max(0, Math.min(100, Number(e.target.value) || 0)),
+                              })
+                            }
+                            className="h-9"
+                          />
+                        </div>
+                      </div>
+                      <div className="mt-2 flex justify-end text-sm font-medium">
+                        {formatCurrency(lineTotal)}
+                      </div>
+                    </div>
                   );
                 })}
-              </TableBody>
-            </Table>
+              </div>
+            </>
           )}
         </CardContent>
       </Card>
@@ -333,31 +410,33 @@ function SaleSuccessPanel({ success, onNewSale }: { success: SuccessState; onNew
           </p>
         </CardHeader>
         <CardContent className="space-y-4">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Title</TableHead>
-                <TableHead>Qty</TableHead>
-                <TableHead>Unit Price</TableHead>
-                <TableHead className="text-right">Line Total</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {success.lines.map((line) => {
-                const selling = line.unitListPrice * (1 - line.discountPercent / 100);
-                return (
-                  <TableRow key={line.bookId}>
-                    <TableCell>{line.title}</TableCell>
-                    <TableCell>{line.quantity}</TableCell>
-                    <TableCell>{formatCurrency(selling)}</TableCell>
-                    <TableCell className="text-right">
-                      {formatCurrency(Math.round(selling * line.quantity * 100) / 100)}
-                    </TableCell>
-                  </TableRow>
-                );
-              })}
-            </TableBody>
-          </Table>
+          <div className="-mx-(--card-spacing) overflow-x-auto px-(--card-spacing)">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Title</TableHead>
+                  <TableHead>Qty</TableHead>
+                  <TableHead>Unit Price</TableHead>
+                  <TableHead className="text-right">Line Total</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {success.lines.map((line) => {
+                  const selling = line.unitListPrice * (1 - line.discountPercent / 100);
+                  return (
+                    <TableRow key={line.bookId}>
+                      <TableCell>{line.title}</TableCell>
+                      <TableCell>{line.quantity}</TableCell>
+                      <TableCell>{formatCurrency(selling)}</TableCell>
+                      <TableCell className="text-right">
+                        {formatCurrency(Math.round(selling * line.quantity * 100) / 100)}
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
+          </div>
           <div className="flex justify-end">
             <div className="w-full max-w-xs space-y-1 text-sm">
               <div className="flex justify-between">

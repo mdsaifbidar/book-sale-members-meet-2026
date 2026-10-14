@@ -44,36 +44,40 @@ export default async function DashboardPage() {
             {recentSales.length === 0 ? (
               <p className="py-8 text-center text-sm text-muted-foreground">No sales yet.</p>
             ) : (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Transaction</TableHead>
-                    <TableHead>Customer</TableHead>
-                    <TableHead>Date</TableHead>
-                    <TableHead className="text-right">Total</TableHead>
-                    <TableHead>Status</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {recentSales.map((sale) => (
-                    <TableRow key={sale.id}>
-                      <TableCell>
-                        <Link href={`/sales/${sale.id}`} className="font-medium text-primary hover:underline">
-                          {sale.transaction_code}
-                        </Link>
-                      </TableCell>
-                      <TableCell>{sale.customer_name}</TableCell>
-                      <TableCell className="text-muted-foreground">{formatDateTime(sale.created_at)}</TableCell>
-                      <TableCell className="text-right">{formatCurrency(sale.total_amount)}</TableCell>
-                      <TableCell>
-                        <Badge variant={sale.cash_paid ? "secondary" : "destructive"}>
-                          {sale.cash_paid ? "Paid" : "Unpaid"}
-                        </Badge>
-                      </TableCell>
+              <div className="-mx-(--card-spacing) overflow-x-auto px-(--card-spacing)">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Transaction</TableHead>
+                      <TableHead>Customer</TableHead>
+                      <TableHead className="hidden sm:table-cell">Date</TableHead>
+                      <TableHead className="text-right">Total</TableHead>
+                      <TableHead>Status</TableHead>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+                  </TableHeader>
+                  <TableBody>
+                    {recentSales.map((sale) => (
+                      <TableRow key={sale.id}>
+                        <TableCell>
+                          <Link href={`/sales/${sale.id}`} className="font-medium text-primary hover:underline">
+                            {sale.transaction_code}
+                          </Link>
+                        </TableCell>
+                        <TableCell>{sale.customer_name}</TableCell>
+                        <TableCell className="hidden text-muted-foreground sm:table-cell">
+                          {formatDateTime(sale.created_at)}
+                        </TableCell>
+                        <TableCell className="text-right">{formatCurrency(sale.total_amount)}</TableCell>
+                        <TableCell>
+                          <Badge variant={sale.cash_paid ? "secondary" : "destructive"}>
+                            {sale.cash_paid ? "Paid" : "Unpaid"}
+                          </Badge>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
             )}
           </CardContent>
         </Card>

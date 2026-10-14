@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
@@ -10,6 +11,8 @@ import {
   History,
   UserCircle,
   LogOut,
+  Menu,
+  X,
 } from "lucide-react";
 import { logout } from "@/app/login/actions";
 
@@ -29,13 +32,50 @@ export function AppShell({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
+  const [mobileOpen, setMobileOpen] = useState(false);
+
+  // Close the drawer on navigation rather than leaving it open behind the
+  // new page. Adjusted during render (not an effect) per React's guidance
+  // for resetting state when a prop changes: https://react.dev/learn/you-might-not-need-an-effect
+  const [prevPathname, setPrevPathname] = useState(pathname);
+  if (pathname !== prevPathname) {
+    setPrevPathname(pathname);
+    setMobileOpen(false);
+  }
+
+  const currentLabel = NAV_ITEMS.find(
+    ({ href }) => pathname === href || (href !== "/dashboard" && pathname.startsWith(href))
+  )?.label;
 
   return (
     <div className="flex h-screen overflow-hidden">
-      <aside className="flex h-full w-60 shrink-0 flex-col overflow-y-auto bg-sidebar text-sidebar-foreground print:hidden">
-        <div className="px-5 py-6">
-          <p className="text-sm font-semibold tracking-tight">SIO Book Sale</p>
-          <p className="text-xs text-sidebar-foreground/60">Members Meet 2026</p>
+      {mobileOpen && (
+        <div
+          className="fixed inset-0 z-40 bg-black/50 lg:hidden"
+          onClick={() => setMobileOpen(false)}
+          aria-hidden="true"
+        />
+      )}
+
+      <aside
+        className={cn(
+          "fixed inset-y-0 left-0 z-50 flex h-full w-64 shrink-0 -translate-x-full flex-col overflow-y-auto bg-sidebar text-sidebar-foreground transition-transform duration-200 ease-out print:hidden lg:static lg:w-60 lg:translate-x-0",
+          mobileOpen && "translate-x-0"
+        )}
+      >
+        <div className="flex items-center justify-between px-5 py-6">
+          <div>
+            <p className="text-sm font-semibold tracking-tight">SIO Book Sale</p>
+            <p className="text-xs text-sidebar-foreground/60">Members Meet 2026</p>
+          </div>
+          <button
+            type="button"
+            onClick={() => setMobileOpen(false)}
+            aria-label="Close menu"
+            className="rounded-md p-1 text-sidebar-foreground/70 hover:bg-sidebar-accent/60 lg:hidden"
+          >
+            <X className="size-5" />
+          </button>
         </div>
         <nav className="flex-1 space-y-1 px-3">
           {NAV_ITEMS.map(({ href, label, icon: Icon }) => {
@@ -45,7 +85,7 @@ export function AppShell({
                 key={href}
                 href={href}
                 className={cn(
-                  "flex items-center gap-2.5 rounded-md px-3 py-2 text-sm transition-colors",
+                  "flex items-center gap-2.5 rounded-md px-3 py-2.5 text-sm transition-colors lg:py-2",
                   active
                     ? "bg-sidebar-accent text-sidebar-accent-foreground"
                     : "text-sidebar-foreground/70 hover:bg-sidebar-accent/60 hover:text-sidebar-accent-foreground"
@@ -70,9 +110,23 @@ export function AppShell({
           </form>
         </div>
       </aside>
-      <main className="h-full flex-1 overflow-y-auto bg-background">
-        <div className="mx-auto max-w-7xl px-6 py-8 sm:px-8">{children}</div>
-      </main>
+
+      <div className="flex h-full flex-1 flex-col overflow-hidden">
+        <header className="flex shrink-0 items-center gap-3 border-b bg-background px-4 py-3 print:hidden lg:hidden">
+          <button
+            type="button"
+            onClick={() => setMobileOpen(true)}
+            aria-label="Open menu"
+            className="rounded-md p-1.5 text-foreground hover:bg-muted"
+          >
+            <Menu className="size-5" />
+          </button>
+          <span className="text-sm font-semibold">{currentLabel ?? "SIO Book Sale"}</span>
+        </header>
+        <main className="h-full flex-1 overflow-y-auto bg-background">
+          <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-8 lg:px-8">{children}</div>
+        </main>
+      </div>
     </div>
   );
 }

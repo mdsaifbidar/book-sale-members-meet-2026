@@ -50,7 +50,7 @@ export default async function SalesHistoryPage({
           <h1 className="text-2xl font-semibold tracking-tight">Sales History</h1>
           <p className="text-sm text-muted-foreground">{sales.length} transaction(s)</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           <a
             href={`/api/export/sales${queryString ? `?${queryString}` : ""}`}
             className={buttonVariants({ variant: "outline" })}
@@ -117,39 +117,43 @@ export default async function SalesHistoryPage({
           {sales.length === 0 ? (
             <p className="py-10 text-center text-sm text-muted-foreground">No transactions match these filters.</p>
           ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Transaction</TableHead>
-                  <TableHead>Customer</TableHead>
-                  <TableHead>Date</TableHead>
-                  <TableHead className="text-right">Total</TableHead>
-                  <TableHead>Status</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {sales.map((sale) => (
-                  <TableRow key={sale.id}>
-                    <TableCell>
-                      <Link href={`/sales/${sale.id}`} className="font-medium text-primary hover:underline">
-                        {sale.transaction_code}
-                      </Link>
-                    </TableCell>
-                    <TableCell>
-                      {sale.customer_name}{" "}
-                      <span className="text-xs text-muted-foreground capitalize">({sale.customer_type})</span>
-                    </TableCell>
-                    <TableCell className="text-muted-foreground">{formatDateTime(sale.created_at)}</TableCell>
-                    <TableCell className="text-right">{formatCurrency(sale.total_amount)}</TableCell>
-                    <TableCell>
-                      <Badge variant={sale.cash_paid ? "secondary" : "destructive"}>
-                        {sale.cash_paid ? "Paid" : "Unpaid"}
-                      </Badge>
-                    </TableCell>
+            <div className="-mx-(--card-spacing) overflow-x-auto px-(--card-spacing)">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Transaction</TableHead>
+                    <TableHead>Customer</TableHead>
+                    <TableHead className="hidden sm:table-cell">Date</TableHead>
+                    <TableHead className="text-right">Total</TableHead>
+                    <TableHead>Status</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {sales.map((sale) => (
+                    <TableRow key={sale.id}>
+                      <TableCell>
+                        <Link href={`/sales/${sale.id}`} className="font-medium text-primary hover:underline">
+                          {sale.transaction_code}
+                        </Link>
+                      </TableCell>
+                      <TableCell>
+                        {sale.customer_name}{" "}
+                        <span className="text-xs text-muted-foreground capitalize">({sale.customer_type})</span>
+                      </TableCell>
+                      <TableCell className="hidden text-muted-foreground sm:table-cell">
+                        {formatDateTime(sale.created_at)}
+                      </TableCell>
+                      <TableCell className="text-right">{formatCurrency(sale.total_amount)}</TableCell>
+                      <TableCell>
+                        <Badge variant={sale.cash_paid ? "secondary" : "destructive"}>
+                          {sale.cash_paid ? "Paid" : "Unpaid"}
+                        </Badge>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
           )}
         </CardContent>
       </Card>

@@ -27,16 +27,16 @@ export function InventoryTable({ books }: { books: Book[] }) {
       {Object.entries(grouped).map(([supplier, supplierBooks]) => (
         <div key={supplier} className="space-y-3">
           <h2 className="text-sm font-semibold text-muted-foreground">{supplier}</h2>
-          <div className="overflow-hidden rounded-lg border">
+          <div className="overflow-x-auto rounded-lg border">
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Title</TableHead>
+                  <TableHead className="min-w-40">Title</TableHead>
                   <TableHead>List Price</TableHead>
                   <TableHead>Discount %</TableHead>
-                  <TableHead>Selling Price</TableHead>
-                  <TableHead>Opening</TableHead>
-                  <TableHead>Sold</TableHead>
+                  <TableHead className="hidden sm:table-cell">Selling Price</TableHead>
+                  <TableHead className="hidden sm:table-cell">Opening</TableHead>
+                  <TableHead className="hidden sm:table-cell">Sold</TableHead>
                   <TableHead>Remaining</TableHead>
                   <TableHead className="w-10" />
                 </TableRow>
@@ -65,11 +65,13 @@ export function InventoryTable({ books }: { books: Book[] }) {
                       </TableCell>
                       <TableCell>{formatCurrency(book.list_price)}</TableCell>
                       <TableCell>{book.discount_percent}%</TableCell>
-                      <TableCell>
+                      <TableCell className="hidden sm:table-cell">
                         {formatCurrency(book.list_price * (1 - book.discount_percent / 100))}
                       </TableCell>
-                      <TableCell>{book.opening_stock}</TableCell>
-                      <TableCell>{book.opening_stock - book.remaining_stock}</TableCell>
+                      <TableCell className="hidden sm:table-cell">{book.opening_stock}</TableCell>
+                      <TableCell className="hidden sm:table-cell">
+                        {book.opening_stock - book.remaining_stock}
+                      </TableCell>
                       <TableCell>
                         <Badge variant={book.remaining_stock <= 5 ? "destructive" : "outline"}>
                           {book.remaining_stock}
@@ -154,11 +156,11 @@ function EditableRow({
           className="h-9 w-20"
         />
       </TableCell>
-      <TableCell className="text-muted-foreground">
+      <TableCell className="hidden text-muted-foreground sm:table-cell">
         {formatCurrency(listPrice * (1 - discountPercent / 100))}
       </TableCell>
-      <TableCell>{book.opening_stock}</TableCell>
-      <TableCell>{book.opening_stock - remainingStock}</TableCell>
+      <TableCell className="hidden sm:table-cell">{book.opening_stock}</TableCell>
+      <TableCell className="hidden sm:table-cell">{book.opening_stock - remainingStock}</TableCell>
       <TableCell>
         <Input
           type="number"
