@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
+import Link, { useLinkStatus } from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import {
@@ -13,8 +13,18 @@ import {
   LogOut,
   Menu,
   X,
+  Loader2Icon,
+  type LucideIcon,
 } from "lucide-react";
 import { logout } from "@/app/login/actions";
+
+// Must render inside the <Link> it reflects — useLinkStatus reads the
+// pending state of its nearest ancestor Link, so this swaps to a spinner
+// the instant that specific link is clicked, before the new route streams in.
+function NavIcon({ icon: Icon }: { icon: LucideIcon }) {
+  const { pending } = useLinkStatus();
+  return pending ? <Loader2Icon className="size-4 animate-spin" /> : <Icon className="size-4" />;
+}
 
 const NAV_ITEMS = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -91,7 +101,7 @@ export function AppShell({
                     : "text-sidebar-foreground/70 hover:bg-sidebar-accent/60 hover:text-sidebar-accent-foreground"
                 )}
               >
-                <Icon className="size-4" />
+                <NavIcon icon={Icon} />
                 {label}
               </Link>
             );
