@@ -5,8 +5,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { buttonVariants } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { DeleteSaleButton } from "@/components/delete-sale-button";
 import { formatCurrency } from "@/lib/money";
-import { formatDateTime } from "@/lib/format";
+import { formatDateTime, paymentMethodLabel } from "@/lib/format";
 import { ArrowLeftIcon } from "lucide-react";
 
 export default async function SaleDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -28,10 +29,13 @@ export default async function SaleDetailPage({ params }: { params: Promise<{ id:
             <p className="text-sm text-muted-foreground">{formatDateTime(sale.created_at)}</p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
-            <Badge variant={sale.cash_paid ? "secondary" : "destructive"}>{sale.cash_paid ? "Paid" : "Unpaid"}</Badge>
+            <Badge variant={sale.cash_paid ? "secondary" : "destructive"}>
+              {paymentMethodLabel(sale.payment_method)}
+            </Badge>
             <a href={`/api/export/receipt/${sale.id}`} className={buttonVariants({ variant: "outline" })}>
               Download Excel
             </a>
+            <DeleteSaleButton saleId={sale.id} transactionCode={sale.transaction_code} />
           </div>
         </CardHeader>
         <CardContent className="space-y-6">

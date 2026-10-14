@@ -25,7 +25,7 @@ export const saleItemInputSchema = z.object({
 export const saleInputSchema = z.object({
   customerType: z.enum(["unit", "person"]),
   customerName: z.string().trim().min(1, "Name is required"),
-  cashPaid: z.boolean(),
+  paymentMethod: z.enum(["cash", "upi", "unpaid"]),
   confirmed: z.boolean().refine((v) => v === true, {
     message: "You must confirm the sale before saving",
   }),

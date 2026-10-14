@@ -8,12 +8,12 @@ import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { formatCurrency } from "@/lib/money";
-import { formatDateTime } from "@/lib/format";
+import { formatDateTime, paymentMethodLabel } from "@/lib/format";
 
 interface SearchParams {
   dateFrom?: string;
   dateTo?: string;
-  customerName?: string;
+  customerType?: string;
   bookTitle?: string;
   supplier?: string;
   paymentStatus?: string;
@@ -23,7 +23,7 @@ function buildFilter(params: SearchParams): SalesFilter {
   return {
     dateFrom: params.dateFrom || undefined,
     dateTo: params.dateTo || undefined,
-    customerName: params.customerName || undefined,
+    customerType: params.customerType === "unit" || params.customerType === "person" ? params.customerType : undefined,
     bookTitle: params.bookTitle || undefined,
     supplier: params.supplier || undefined,
     paymentStatus: params.paymentStatus === "paid" || params.paymentStatus === "unpaid" ? params.paymentStatus : undefined,
@@ -78,8 +78,17 @@ export default async function SalesHistoryPage({
               <Input id="dateTo" name="dateTo" type="date" defaultValue={params.dateTo} />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="customerName">Unit / Person</Label>
-              <Input id="customerName" name="customerName" defaultValue={params.customerName} />
+              <Label htmlFor="customerType">Customer Type</Label>
+              <Select name="customerType" defaultValue={params.customerType ?? "any"}>
+                <SelectTrigger id="customerType">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="any">Any</SelectItem>
+                  <SelectItem value="unit">Unit</SelectItem>
+                  <SelectItem value="person">Person</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="bookTitle">Book</Label>
@@ -146,7 +155,7 @@ export default async function SalesHistoryPage({
                       <TableCell className="text-right">{formatCurrency(sale.total_amount)}</TableCell>
                       <TableCell>
                         <Badge variant={sale.cash_paid ? "secondary" : "destructive"}>
-                          {sale.cash_paid ? "Paid" : "Unpaid"}
+                          {paymentMethodLabel(sale.payment_method)}
                         </Badge>
                       </TableCell>
                     </TableRow>

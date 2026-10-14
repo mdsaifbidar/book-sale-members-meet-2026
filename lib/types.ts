@@ -20,6 +20,7 @@ export interface Book {
 }
 
 export type CustomerType = "unit" | "person";
+export type PaymentMethod = "cash" | "upi" | "unpaid";
 
 export interface Sale {
   id: string;
@@ -30,6 +31,7 @@ export interface Sale {
   discount_total: number;
   total_amount: number;
   cash_paid: boolean;
+  payment_method: PaymentMethod;
   amount_paid: number;
   balance_due: number;
   created_at: string;

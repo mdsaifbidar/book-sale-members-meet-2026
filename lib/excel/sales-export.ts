@@ -1,5 +1,6 @@
 import ExcelJS from "exceljs";
 import type { Sale, SaleItem } from "@/lib/types";
+import { paymentMethodLabel } from "@/lib/format";
 import { autoFitColumns, styleHeaderRow } from "./styles";
 
 export interface SaleWithItemsRow {
@@ -50,7 +51,7 @@ export async function buildSalesWorkbook(rows: SaleWithItemsRow[]): Promise<Exce
         subtotal: sale.subtotal,
         discountTotal: sale.discount_total,
         totalAmount: sale.total_amount,
-        paymentStatus: sale.cash_paid ? "Paid (cash)" : "Unpaid",
+        paymentStatus: paymentMethodLabel(sale.payment_method),
         amountPaid: sale.amount_paid,
         balanceDue: sale.balance_due,
       });

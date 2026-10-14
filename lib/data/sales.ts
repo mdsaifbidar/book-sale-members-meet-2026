@@ -5,7 +5,7 @@ import type { Sale, SaleItem, SaleWithItems } from "@/lib/types";
 export interface SalesFilter {
   dateFrom?: string;
   dateTo?: string;
-  customerName?: string;
+  customerType?: "unit" | "person";
   bookTitle?: string;
   supplier?: string;
   paymentStatus?: "paid" | "unpaid";
@@ -24,7 +24,7 @@ export async function getSales(filter: SalesFilter): Promise<Sale[]> {
 
   if (filter.dateFrom) builder = builder.gte("created_at", filter.dateFrom);
   if (filter.dateTo) builder = builder.lte("created_at", filter.dateTo);
-  if (filter.customerName) builder = builder.ilike("customer_name", `%${filter.customerName}%`);
+  if (filter.customerType) builder = builder.eq("customer_type", filter.customerType);
   if (filter.paymentStatus === "paid") builder = builder.eq("cash_paid", true);
   if (filter.paymentStatus === "unpaid") builder = builder.eq("cash_paid", false);
   if (filter.bookTitle) builder = builder.ilike("sale_items.title_snapshot", `%${filter.bookTitle}%`);

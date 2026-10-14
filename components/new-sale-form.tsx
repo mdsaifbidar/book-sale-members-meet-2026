@@ -9,9 +9,11 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { BookSearch } from "@/components/book-search";
 import { computeCartTotals, formatCurrency } from "@/lib/money";
-import type { Book, CustomerType } from "@/lib/types";
+import { paymentMethodLabel } from "@/lib/format";
+import type { Book, CustomerType, PaymentMethod } from "@/lib/types";
 import { confirmSale } from "@/app/(app)/sales/new/actions";
 import { CheckCircle2Icon, Trash2Icon } from "lucide-react";
 
@@ -30,7 +32,7 @@ interface SuccessState {
   transactionCode: string;
   customerName: string;
   customerType: CustomerType;
-  cashPaid: boolean;
+  paymentMethod: PaymentMethod;
   lines: CartLine[];
   totals: ReturnType<typeof computeCartTotals>;
 }
@@ -39,7 +41,7 @@ export function NewSaleForm() {
   const [customerType, setCustomerType] = useState<CustomerType>("unit");
   const [customerName, setCustomerName] = useState("");
   const [cart, setCart] = useState<CartLine[]>([]);
-  const [cashPaid, setCashPaid] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("unpaid");
   const [confirmed, setConfirmed] = useState(false);
   const [idempotencyKey, setIdempotencyKey] = useState(() => crypto.randomUUID());
   const [pending, startTransition] = useTransition();
@@ -90,7 +92,7 @@ export function NewSaleForm() {
     setCustomerType("unit");
     setCustomerName("");
     setCart([]);
-    setCashPaid(false);
+    setPaymentMethod("unpaid");
     setConfirmed(false);
     setIdempotencyKey(crypto.randomUUID());
     setSuccess(null);
@@ -114,7 +116,7 @@ export function NewSaleForm() {
       const result = await confirmSale({
         customerType,
         customerName,
-        cashPaid,
+        paymentMethod,
         confirmed,
         idempotencyKey,
         items: cart.map((l) => ({
@@ -135,7 +137,7 @@ export function NewSaleForm() {
         transactionCode: result.transactionCode!,
         customerName,
         customerType,
-        cashPaid,
+        paymentMethod,
         lines: cart,
         totals,
       });
@@ -363,11 +365,18 @@ export function NewSaleForm() {
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
-            <Checkbox id="cashPaid" checked={cashPaid} onCheckedChange={(v) => setCashPaid(v === true)} />
-            <Label htmlFor="cashPaid" className="font-normal">
-              Cash paid in full
-            </Label>
+          <div className="space-y-1.5">
+            <Label htmlFor="paymentMethod">Payment</Label>
+            <Select value={paymentMethod} onValueChange={(v) => setPaymentMethod(v as PaymentMethod)}>
+              <SelectTrigger id="paymentMethod" className="w-full sm:w-48">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="unpaid">Unpaid</SelectItem>
+                <SelectItem value="cash">Cash</SelectItem>
+                <SelectItem value="upi">UPI</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
 
           <div className="flex items-center gap-2">
@@ -453,7 +462,7 @@ function SaleSuccessPanel({ success, onNewSale }: { success: SuccessState; onNew
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Payment</span>
-                <span>{success.cashPaid ? "Paid (cash)" : "Unpaid"}</span>
+                <span>{paymentMethodLabel(success.paymentMethod)}</span>
               </div>
             </div>
           </div>

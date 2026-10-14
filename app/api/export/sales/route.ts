@@ -8,10 +8,11 @@ export async function GET(request: NextRequest) {
 
   const params = request.nextUrl.searchParams;
   const paymentStatus = params.get("paymentStatus");
+  const customerType = params.get("customerType");
   const filter: SalesFilter = {
     dateFrom: params.get("dateFrom") ?? undefined,
     dateTo: params.get("dateTo") ?? undefined,
-    customerName: params.get("customerName") ?? undefined,
+    customerType: customerType === "unit" || customerType === "person" ? customerType : undefined,
     bookTitle: params.get("bookTitle") ?? undefined,
     supplier: params.get("supplier") ?? undefined,
     paymentStatus: paymentStatus === "paid" || paymentStatus === "unpaid" ? paymentStatus : undefined,

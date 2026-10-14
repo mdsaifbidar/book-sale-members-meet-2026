@@ -18,13 +18,13 @@ export async function confirmSale(input: unknown): Promise<ConfirmSaleResult> {
   if (!parsed.success) {
     return { success: false, error: parsed.error.issues[0]?.message ?? "Invalid input" };
   }
-  const { customerType, customerName, cashPaid, idempotencyKey, items } = parsed.data;
+  const { customerType, customerName, paymentMethod, idempotencyKey, items } = parsed.data;
 
   const supabase = await createClient();
   const { data, error } = await supabase.rpc("create_sale", {
     p_customer_type: customerType,
     p_customer_name: customerName,
-    p_cash_paid: cashPaid,
+    p_payment_method: paymentMethod,
     p_idempotency_key: idempotencyKey,
     p_items: items.map((i) => ({
       book_id: i.bookId,

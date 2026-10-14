@@ -6,7 +6,7 @@ function withSupplierName(rows: Array<Book & { suppliers: { name: string } | nul
   return rows.map((b) => ({ ...b, supplier_name: b.suppliers?.name }));
 }
 
-export async function searchBooks(query: string, limit = 20): Promise<Book[]> {
+export async function searchBooks(query: string, limit = 500): Promise<Book[]> {
   const supabase = await createClient();
   let builder = supabase
     .from("books")

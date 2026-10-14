@@ -1,5 +1,6 @@
 import ExcelJS from "exceljs";
 import type { Sale, SaleItem } from "@/lib/types";
+import { paymentMethodLabel } from "@/lib/format";
 import { autoFitColumns } from "./styles";
 
 export async function buildReceiptWorkbook(sale: Sale, items: SaleItem[]): Promise<ExcelJS.Buffer> {
@@ -22,7 +23,7 @@ export async function buildReceiptWorkbook(sale: Sale, items: SaleItem[]): Promi
   sheet.addRow(["Date", new Date(sale.created_at).toLocaleString("en-IN")]);
   sheet.addRow(["Customer Type", sale.customer_type]);
   sheet.addRow(["Customer Name", sale.customer_name]);
-  sheet.addRow(["Payment Status", sale.cash_paid ? "Paid (cash)" : "Unpaid"]);
+  sheet.addRow(["Payment Method", paymentMethodLabel(sale.payment_method)]);
   sheet.addRow([]);
 
   const headerRowIndex = sheet.lastRow!.number + 1;

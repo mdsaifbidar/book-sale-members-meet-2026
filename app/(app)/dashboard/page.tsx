@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { formatCurrency } from "@/lib/money";
-import { formatDateTime } from "@/lib/format";
+import { formatDateTime, paymentMethodLabel } from "@/lib/format";
 import { BanknoteIcon, BookOpenIcon, PackageIcon, ReceiptIcon, AlertTriangleIcon } from "lucide-react";
 
 export default async function DashboardPage() {
@@ -70,7 +70,7 @@ export default async function DashboardPage() {
                         <TableCell className="text-right">{formatCurrency(sale.total_amount)}</TableCell>
                         <TableCell>
                           <Badge variant={sale.cash_paid ? "secondary" : "destructive"}>
-                            {sale.cash_paid ? "Paid" : "Unpaid"}
+                            {paymentMethodLabel(sale.payment_method)}
                           </Badge>
                         </TableCell>
                       </TableRow>
