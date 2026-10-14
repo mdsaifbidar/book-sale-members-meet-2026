@@ -96,9 +96,9 @@ export function InventoryTable({ books }: { books: Book[] }) {
                   <TableHead>List Price</TableHead>
                   <TableHead>Discount %</TableHead>
                   <TableHead className="hidden sm:table-cell">Selling Price</TableHead>
-                  <TableHead className="hidden sm:table-cell">Opening</TableHead>
+                  <TableHead className="hidden sm:table-cell">Quantity</TableHead>
                   <TableHead className="hidden sm:table-cell">Sold</TableHead>
-                  <TableHead>Remaining</TableHead>
+                  <TableHead>Stock</TableHead>
                   <TableHead className="w-10" />
                 </TableRow>
               </TableHeader>
