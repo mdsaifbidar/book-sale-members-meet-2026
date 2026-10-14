@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { FilterSelect } from "@/components/filter-select";
 import { formatCurrency } from "@/lib/money";
 import { formatDateTime, paymentMethodLabel } from "@/lib/format";
 
@@ -79,18 +79,16 @@ export default async function SalesHistoryPage({
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="customerType">Customer Type</Label>
-              <Select name="customerType" defaultValue={params.customerType ?? "any"}>
-                <SelectTrigger id="customerType">
-                  <SelectValue>
-                    {(value: string) => ({ any: "Any", unit: "Unit", person: "Person" })[value] ?? value}
-                  </SelectValue>
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="any">Any</SelectItem>
-                  <SelectItem value="unit">Unit</SelectItem>
-                  <SelectItem value="person">Person</SelectItem>
-                </SelectContent>
-              </Select>
+              <FilterSelect
+                id="customerType"
+                name="customerType"
+                defaultValue={params.customerType ?? "any"}
+                options={[
+                  { value: "any", label: "Any" },
+                  { value: "unit", label: "Unit" },
+                  { value: "person", label: "Person" },
+                ]}
+              />
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="bookTitle">Book</Label>
@@ -102,18 +100,16 @@ export default async function SalesHistoryPage({
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="paymentStatus">Payment</Label>
-              <Select name="paymentStatus" defaultValue={params.paymentStatus ?? "any"}>
-                <SelectTrigger id="paymentStatus">
-                  <SelectValue>
-                    {(value: string) => ({ any: "Any", paid: "Paid", unpaid: "Unpaid" })[value] ?? value}
-                  </SelectValue>
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="any">Any</SelectItem>
-                  <SelectItem value="paid">Paid</SelectItem>
-                  <SelectItem value="unpaid">Unpaid</SelectItem>
-                </SelectContent>
-              </Select>
+              <FilterSelect
+                id="paymentStatus"
+                name="paymentStatus"
+                defaultValue={params.paymentStatus ?? "any"}
+                options={[
+                  { value: "any", label: "Any" },
+                  { value: "paid", label: "Paid" },
+                  { value: "unpaid", label: "Unpaid" },
+                ]}
+              />
             </div>
             <div className="flex items-end gap-2 lg:col-span-6">
               <Button type="submit">Apply Filters</Button>
