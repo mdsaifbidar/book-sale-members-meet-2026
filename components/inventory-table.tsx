@@ -7,13 +7,54 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
 import { formatCurrency } from "@/lib/money";
 import type { Book } from "@/lib/types";
 import { adjustBook } from "@/app/(app)/inventory/actions";
 import { PencilIcon, XIcon, CheckIcon } from "lucide-react";
 
+type SortOption = "default" | "title-asc" | "title-desc" | "price-asc" | "price-desc" | "stock-asc" | "stock-desc";
+
+const SORT_OPTIONS: { value: SortOption; label: string }[] = [
+  { value: "default", label: "Sl.No (default)" },
+  { value: "title-asc", label: "Title (A–Z)" },
+  { value: "title-desc", label: "Title (Z–A)" },
+  { value: "price-asc", label: "Selling Price (Low–High)" },
+  { value: "price-desc", label: "Selling Price (High–Low)" },
+  { value: "stock-asc", label: "Remaining Stock (Low–High)" },
+  { value: "stock-desc", label: "Remaining Stock (High–Low)" },
+];
+
+function sellingPrice(book: Book): number {
+  return book.list_price * (1 - book.discount_percent / 100);
+}
+
+function sortBooks(books: Book[], sortBy: SortOption): Book[] {
+  if (sortBy === "default") return books;
+  return [...books].sort((a, b) => {
+    switch (sortBy) {
+      case "title-asc":
+        return a.title.localeCompare(b.title);
+      case "title-desc":
+        return b.title.localeCompare(a.title);
+      case "price-asc":
+        return sellingPrice(a) - sellingPrice(b);
+      case "price-desc":
+        return sellingPrice(b) - sellingPrice(a);
+      case "stock-asc":
+        return a.remaining_stock - b.remaining_stock;
+      case "stock-desc":
+        return b.remaining_stock - a.remaining_stock;
+      default:
+        return 0;
+    }
+  });
+}
+
 export function InventoryTable({ books }: { books: Book[] }) {
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [sortBy, setSortBy] = useState<SortOption>("default");
   const router = useRouter();
 
   const grouped = books.reduce<Record<string, Book[]>>((acc, book) => {
@@ -24,6 +65,26 @@ export function InventoryTable({ books }: { books: Book[] }) {
 
   return (
     <div className="space-y-8">
+      {books.length > 0 && (
+        <div className="flex items-center gap-2">
+          <Label htmlFor="inventorySort" className="text-sm text-muted-foreground">
+            Sort
+          </Label>
+          <Select value={sortBy} onValueChange={(v) => setSortBy(v as SortOption)}>
+            <SelectTrigger id="inventorySort" className="w-56">
+              <SelectValue>{(value: SortOption) => SORT_OPTIONS.find((o) => o.value === value)?.label}</SelectValue>
+            </SelectTrigger>
+            <SelectContent>
+              {SORT_OPTIONS.map((o) => (
+                <SelectItem key={o.value} value={o.value}>
+                  {o.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      )}
+
       {Object.entries(grouped).map(([supplier, supplierBooks]) => (
         <div key={supplier} className="space-y-3">
           <h2 className="text-sm font-semibold text-muted-foreground">{supplier}</h2>
@@ -42,7 +103,7 @@ export function InventoryTable({ books }: { books: Book[] }) {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {supplierBooks.map((book) =>
+                {sortBooks(supplierBooks, sortBy).map((book) =>
                   editingId === book.id ? (
                     <EditableRow
                       key={book.id}

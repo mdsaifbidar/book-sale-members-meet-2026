@@ -2,6 +2,16 @@ import "server-only";
 import { createClient } from "@/lib/supabase/server";
 import type { Sale, SaleItem, SaleWithItems } from "@/lib/types";
 
+export type SalesSortOption = "date-desc" | "date-asc" | "total-desc" | "total-asc" | "customer-asc";
+
+const SORT_COLUMNS: Record<SalesSortOption, { column: "created_at" | "total_amount" | "customer_name"; ascending: boolean }> = {
+  "date-desc": { column: "created_at", ascending: false },
+  "date-asc": { column: "created_at", ascending: true },
+  "total-desc": { column: "total_amount", ascending: false },
+  "total-asc": { column: "total_amount", ascending: true },
+  "customer-asc": { column: "customer_name", ascending: true },
+};
+
 export interface SalesFilter {
   dateFrom?: string;
   dateTo?: string;
@@ -9,10 +19,12 @@ export interface SalesFilter {
   bookTitle?: string;
   supplier?: string;
   paymentStatus?: "paid" | "unpaid";
+  sortBy?: SalesSortOption;
 }
 
 export async function getSales(filter: SalesFilter): Promise<Sale[]> {
   const supabase = await createClient();
+  const { column, ascending } = SORT_COLUMNS[filter.sortBy ?? "date-desc"];
 
   // Always inner-join sale_items (every sale has >=1 item, guaranteed by the
   // create_sale RPC) rather than branching the select string — a dynamic
@@ -20,7 +32,7 @@ export async function getSales(filter: SalesFilter): Promise<Sale[]> {
   let builder = supabase
     .from("sales")
     .select("*, sale_items!inner(title_snapshot, supplier_name_snapshot)")
-    .order("created_at", { ascending: false });
+    .order(column, { ascending });
 
   if (filter.dateFrom) builder = builder.gte("created_at", filter.dateFrom);
   if (filter.dateTo) builder = builder.lte("created_at", filter.dateTo);

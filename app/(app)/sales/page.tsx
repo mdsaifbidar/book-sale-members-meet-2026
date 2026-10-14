@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { getSales, type SalesFilter } from "@/lib/data/sales";
+import { getSales, type SalesFilter, type SalesSortOption } from "@/lib/data/sales";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -17,7 +17,17 @@ interface SearchParams {
   bookTitle?: string;
   supplier?: string;
   paymentStatus?: string;
+  sortBy?: string;
 }
+
+const SORT_OPTIONS: { value: SalesSortOption; label: string }[] = [
+  { value: "date-desc", label: "Date (Newest first)" },
+  { value: "date-asc", label: "Date (Oldest first)" },
+  { value: "total-desc", label: "Total (High–Low)" },
+  { value: "total-asc", label: "Total (Low–High)" },
+  { value: "customer-asc", label: "Customer (A–Z)" },
+];
+const SORT_VALUES = new Set(SORT_OPTIONS.map((o) => o.value));
 
 function buildFilter(params: SearchParams): SalesFilter {
   return {
@@ -27,6 +37,7 @@ function buildFilter(params: SearchParams): SalesFilter {
     bookTitle: params.bookTitle || undefined,
     supplier: params.supplier || undefined,
     paymentStatus: params.paymentStatus === "paid" || params.paymentStatus === "unpaid" ? params.paymentStatus : undefined,
+    sortBy: SORT_VALUES.has(params.sortBy as SalesSortOption) ? (params.sortBy as SalesSortOption) : undefined,
   };
 }
 
@@ -109,6 +120,15 @@ export default async function SalesHistoryPage({
                   { value: "paid", label: "Paid" },
                   { value: "unpaid", label: "Unpaid" },
                 ]}
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="sortBy">Sort By</Label>
+              <FilterSelect
+                id="sortBy"
+                name="sortBy"
+                defaultValue={params.sortBy ?? "date-desc"}
+                options={SORT_OPTIONS}
               />
             </div>
             <div className="flex items-end gap-2 lg:col-span-6">

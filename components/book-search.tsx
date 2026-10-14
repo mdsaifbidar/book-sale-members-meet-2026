@@ -5,9 +5,25 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { formatCurrency } from "@/lib/money";
 import type { Book } from "@/lib/types";
 import { PlusIcon, SearchIcon } from "lucide-react";
+
+type SortOption = "title-asc" | "title-desc" | "price-asc" | "price-desc" | "stock-asc" | "stock-desc";
+
+const SORT_OPTIONS: { value: SortOption; label: string }[] = [
+  { value: "title-asc", label: "Title (A–Z)" },
+  { value: "title-desc", label: "Title (Z–A)" },
+  { value: "price-asc", label: "Price (Low–High)" },
+  { value: "price-desc", label: "Price (High–Low)" },
+  { value: "stock-asc", label: "Stock (Low–High)" },
+  { value: "stock-desc", label: "Stock (High–Low)" },
+];
+
+function sellingPrice(book: Book): number {
+  return book.list_price * (1 - book.discount_percent / 100);
+}
 
 export function BookSearch({
   onSelect,
@@ -19,6 +35,7 @@ export function BookSearch({
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [allBooks, setAllBooks] = useState<Book[] | null>(null);
+  const [sortBy, setSortBy] = useState<SortOption>("title-asc");
   const loading = open && allBooks === null;
 
   // Load the whole in-stock catalogue (already sorted A-Z by the API) each
@@ -42,9 +59,24 @@ export function BookSearch({
   const results = useMemo(() => {
     if (!allBooks) return [];
     const q = query.trim().toLowerCase();
-    if (!q) return allBooks;
-    return allBooks.filter((b) => b.title.toLowerCase().includes(q));
-  }, [allBooks, query]);
+    const filtered = q ? allBooks.filter((b) => b.title.toLowerCase().includes(q)) : allBooks;
+    return [...filtered].sort((a, b) => {
+      switch (sortBy) {
+        case "title-asc":
+          return a.title.localeCompare(b.title);
+        case "title-desc":
+          return b.title.localeCompare(a.title);
+        case "price-asc":
+          return sellingPrice(a) - sellingPrice(b);
+        case "price-desc":
+          return sellingPrice(b) - sellingPrice(a);
+        case "stock-asc":
+          return a.remaining_stock - b.remaining_stock;
+        case "stock-desc":
+          return b.remaining_stock - a.remaining_stock;
+      }
+    });
+  }, [allBooks, query, sortBy]);
 
   return (
     <Dialog
@@ -63,13 +95,29 @@ export function BookSearch({
       <DialogContent className="flex max-h-[85vh] max-w-[calc(100%-2rem)] flex-col gap-0 p-0 sm:max-w-2xl">
         <DialogHeader className="border-b p-4 pb-3">
           <DialogTitle>Add Books</DialogTitle>
-          <Input
-            autoFocus
-            placeholder="Search by title…"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            className="mt-1"
-          />
+          <div className="mt-1 flex flex-col gap-2 sm:flex-row">
+            <Input
+              autoFocus
+              placeholder="Search by title…"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              className="flex-1"
+            />
+            <Select value={sortBy} onValueChange={(v) => setSortBy(v as SortOption)}>
+              <SelectTrigger className="w-full sm:w-44">
+                <SelectValue>
+                  {(value: SortOption) => SORT_OPTIONS.find((o) => o.value === value)?.label}
+                </SelectValue>
+              </SelectTrigger>
+              <SelectContent>
+                {SORT_OPTIONS.map((o) => (
+                  <SelectItem key={o.value} value={o.value}>
+                    {o.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
         </DialogHeader>
 
         <div className="overflow-y-auto">
