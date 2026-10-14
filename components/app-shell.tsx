@@ -9,6 +9,7 @@ import {
   ReceiptText,
   BookOpen,
   History,
+  BarChart3,
   UserCircle,
   LogOut,
   Menu,
@@ -30,6 +31,7 @@ const NAV_ITEMS = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/sales/new", label: "New Sale", icon: ReceiptText },
   { href: "/sales", label: "Sales History", icon: History },
+  { href: "/reports", label: "Reports", icon: BarChart3 },
   { href: "/inventory", label: "Inventory", icon: BookOpen },
   { href: "/account", label: "Account", icon: UserCircle },
 ];

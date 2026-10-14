@@ -1,7 +1,8 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ChangePasswordForm } from "@/components/change-password-form";
 import { requireUser } from "@/lib/supabase/guard";
 
+// Password changes are temporarily disabled (re-enable by swapping this
+// notice back for <ChangePasswordForm /> from @/components/change-password-form).
 export default async function AccountPage() {
   const { claims } = await requireUser();
 
@@ -17,7 +18,10 @@ export default async function AccountPage() {
           <CardTitle>Change Password</CardTitle>
         </CardHeader>
         <CardContent>
-          <ChangePasswordForm />
+          <p className="text-sm text-muted-foreground">
+            Password changes are temporarily disabled. Contact whoever manages the Supabase project if you need the
+            admin password reset.
+          </p>
         </CardContent>
       </Card>
     </div>
