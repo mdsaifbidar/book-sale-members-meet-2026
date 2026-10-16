@@ -23,6 +23,7 @@ export async function buildReceiptWorkbook(sale: Sale, items: SaleItem[]): Promi
   sheet.addRow(["Date", new Date(sale.created_at).toLocaleString("en-IN")]);
   sheet.addRow(["Customer Type", sale.customer_type]);
   sheet.addRow(["Customer Name", sale.customer_name]);
+  if (sale.person_unit) sheet.addRow(["Person Unit", sale.person_unit]);
   sheet.addRow(["Payment Method", paymentMethodLabel(sale.payment_method)]);
   sheet.addRow([]);
 

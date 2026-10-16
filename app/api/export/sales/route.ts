@@ -16,6 +16,7 @@ export async function GET(request: NextRequest) {
     dateFrom: params.get("dateFrom") ?? undefined,
     dateTo: params.get("dateTo") ?? undefined,
     customerType: customerType === "unit" || customerType === "person" ? customerType : undefined,
+    personUnit: params.get("personUnit") ?? undefined,
     bookTitle: params.get("bookTitle") ?? undefined,
     supplier: params.get("supplier") ?? undefined,
     paymentMethod:

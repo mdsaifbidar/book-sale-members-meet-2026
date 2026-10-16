@@ -41,6 +41,7 @@ interface SuccessState {
   saleId: string;
   transactionCode: string;
   customerName: string;
+  personUnit: string;
   customerType: CustomerType;
   paymentMethod: PaymentMethod;
   lines: CartLine[];
@@ -50,6 +51,7 @@ interface SuccessState {
 export function NewSaleForm() {
   const [customerType, setCustomerType] = useState<CustomerType>("unit");
   const [customerName, setCustomerName] = useState("");
+  const [personUnit, setPersonUnit] = useState("");
   const [cart, setCart] = useState<CartLine[]>([]);
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("unpaid");
   const [confirmed, setConfirmed] = useState(false);
@@ -104,6 +106,7 @@ export function NewSaleForm() {
   function resetForm() {
     setCustomerType("unit");
     setCustomerName("");
+    setPersonUnit("");
     setCart([]);
     setPaymentMethod("unpaid");
     setConfirmed(false);
@@ -138,6 +141,7 @@ export function NewSaleForm() {
       const result = await confirmSale({
         customerType,
         customerName,
+        personUnit: customerType === "person" ? personUnit : undefined,
         paymentMethod,
         confirmed,
         idempotencyKey,
@@ -160,6 +164,7 @@ export function NewSaleForm() {
         saleId: result.saleId!,
         transactionCode: result.transactionCode!,
         customerName,
+        personUnit,
         customerType,
         paymentMethod,
         lines: cart,
@@ -212,6 +217,17 @@ export function NewSaleForm() {
               <p className="text-xs text-destructive">This field is required.</p>
             )}
           </div>
+          {customerType === "person" && (
+            <div className="space-y-2">
+              <Label htmlFor="personUnit">Person Unit</Label>
+              <Input
+                id="personUnit"
+                value={personUnit}
+                onChange={(e) => setPersonUnit(e.target.value)}
+                placeholder="e.g. Mangalore Unit"
+              />
+            </div>
+          )}
         </CardContent>
       </Card>
 
@@ -427,7 +443,8 @@ export function NewSaleForm() {
           <DialogHeader>
             <DialogTitle>Save this sale?</DialogTitle>
             <DialogDescription>
-              {cart.length} book{cart.length === 1 ? "" : "s"} for {customerName} ({customerType}). This decrements
+              {cart.length} book{cart.length === 1 ? "" : "s"} for {customerName}
+              {customerType === "person" && personUnit ? ` (${personUnit})` : ` (${customerType})`}. This decrements
               stock immediately — double-check before saving.
             </DialogDescription>
           </DialogHeader>
@@ -471,6 +488,7 @@ function SaleSuccessPanel({ success, onNewSale }: { success: SuccessState; onNew
           <CardTitle>Receipt — {success.transactionCode}</CardTitle>
           <p className="text-sm text-muted-foreground">
             {success.customerType === "unit" ? "Unit" : "Person"}: {success.customerName}
+            {success.personUnit && ` (${success.personUnit})`}
           </p>
         </CardHeader>
         <CardContent className="space-y-4">

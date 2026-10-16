@@ -18,7 +18,7 @@ export async function confirmSale(input: unknown): Promise<ConfirmSaleResult> {
   if (!parsed.success) {
     return { success: false, error: parsed.error.issues[0]?.message ?? "Invalid input" };
   }
-  const { customerType, customerName, paymentMethod, idempotencyKey, items } = parsed.data;
+  const { customerType, customerName, personUnit, paymentMethod, idempotencyKey, items } = parsed.data;
 
   const supabase = await createClient();
   const { data, error } = await supabase.rpc("create_sale", {
@@ -26,6 +26,10 @@ export async function confirmSale(input: unknown): Promise<ConfirmSaleResult> {
     p_customer_name: customerName,
     p_payment_method: paymentMethod,
     p_idempotency_key: idempotencyKey,
+    // Omit the key (rather than sending null) unless actually used, so a
+    // sale with no person_unit hits the RPC exactly as it did before this
+    // field existed — safe even if this code runs before migration 0008.
+    ...(customerType === "person" && personUnit ? { p_person_unit: personUnit } : {}),
     p_items: items.map((i) => ({
       book_id: i.bookId,
       quantity: i.quantity,

@@ -27,6 +27,7 @@ export interface Sale {
   transaction_code: string;
   customer_type: CustomerType;
   customer_name: string;
+  person_unit: string | null;
   subtotal: number;
   discount_total: number;
   total_amount: number;

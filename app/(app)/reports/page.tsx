@@ -16,6 +16,7 @@ interface SearchParams {
   dateFrom?: string;
   dateTo?: string;
   customerType?: string;
+  personUnit?: string;
   supplier?: string;
   paymentMethod?: string;
 }
@@ -34,6 +35,7 @@ function buildFilter(params: SearchParams): SalesFilter {
     dateFrom: params.dateFrom || undefined,
     dateTo: params.dateTo || undefined,
     customerType: params.customerType === "unit" || params.customerType === "person" ? params.customerType : undefined,
+    personUnit: params.personUnit || undefined,
     supplier: params.supplier || undefined,
     paymentMethod: PAYMENT_METHOD_VALUES.has(params.paymentMethod ?? "")
       ? (params.paymentMethod as "cash" | "upi" | "unpaid")
@@ -76,7 +78,7 @@ export default async function ReportsPage({
 
       <Card>
         <CardContent className="pt-6">
-          <form method="GET" className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
+          <form method="GET" className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-6">
             <div className="space-y-1.5">
               <Label htmlFor="dateFrom">From</Label>
               <Input id="dateFrom" name="dateFrom" type="date" defaultValue={params.dateFrom} />
@@ -99,6 +101,10 @@ export default async function ReportsPage({
               />
             </div>
             <div className="space-y-1.5">
+              <Label htmlFor="personUnit">Person Unit</Label>
+              <Input id="personUnit" name="personUnit" defaultValue={params.personUnit} />
+            </div>
+            <div className="space-y-1.5">
               <Label htmlFor="supplier">Supplier</Label>
               <Input id="supplier" name="supplier" defaultValue={params.supplier} />
             </div>
@@ -111,7 +117,7 @@ export default async function ReportsPage({
                 options={PAYMENT_METHOD_OPTIONS}
               />
             </div>
-            <div className="flex items-end gap-2 lg:col-span-5">
+            <div className="flex items-end gap-2 lg:col-span-6">
               <Button type="submit">Apply Filters</Button>
               <Link href="/reports" className={buttonVariants({ variant: "ghost" })}>
                 Clear

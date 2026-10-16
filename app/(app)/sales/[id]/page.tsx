@@ -47,6 +47,7 @@ export default async function SaleDetailPage({ params }: { params: Promise<{ id:
             <div>
               <p className="text-muted-foreground">Name</p>
               <p className="font-medium">{sale.customer_name}</p>
+              {sale.person_unit && <p className="text-xs text-muted-foreground">{sale.person_unit}</p>}
             </div>
             <div>
               <p className="text-muted-foreground">Amount Paid</p>

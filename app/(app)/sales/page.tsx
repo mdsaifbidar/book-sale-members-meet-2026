@@ -14,6 +14,7 @@ interface SearchParams {
   dateFrom?: string;
   dateTo?: string;
   customerType?: string;
+  personUnit?: string;
   bookTitle?: string;
   supplier?: string;
   paymentMethod?: string;
@@ -42,6 +43,7 @@ function buildFilter(params: SearchParams): SalesFilter {
     dateFrom: params.dateFrom || undefined,
     dateTo: params.dateTo || undefined,
     customerType: params.customerType === "unit" || params.customerType === "person" ? params.customerType : undefined,
+    personUnit: params.personUnit || undefined,
     bookTitle: params.bookTitle || undefined,
     supplier: params.supplier || undefined,
     paymentMethod: PAYMENT_METHOD_VALUES.has(params.paymentMethod ?? "")
@@ -112,6 +114,10 @@ export default async function SalesHistoryPage({
               />
             </div>
             <div className="space-y-1.5">
+              <Label htmlFor="personUnit">Person Unit</Label>
+              <Input id="personUnit" name="personUnit" defaultValue={params.personUnit} />
+            </div>
+            <div className="space-y-1.5">
               <Label htmlFor="bookTitle">Book</Label>
               <Input id="bookTitle" name="bookTitle" defaultValue={params.bookTitle} />
             </div>
@@ -174,6 +180,9 @@ export default async function SalesHistoryPage({
                       <TableCell>
                         {sale.customer_name}{" "}
                         <span className="text-xs text-muted-foreground capitalize">({sale.customer_type})</span>
+                        {sale.person_unit && (
+                          <div className="text-xs text-muted-foreground">{sale.person_unit}</div>
+                        )}
                       </TableCell>
                       <TableCell className="hidden text-muted-foreground sm:table-cell">
                         {formatDateTime(sale.created_at)}
